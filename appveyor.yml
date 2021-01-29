@@ -22,13 +22,13 @@ image: Visual Studio 2019
 clone_depth: 1
 
 environment:
-  PLR_VERSION: 8.4.1
   PGSOURCE:  $(APPVEYOR_BUILD_FOLDER)\postgres
+  PLR_VERSION: 8.4.1
   PLRSOURCE:  $(APPVEYOR_BUILD_FOLDER)\plr
   PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\PLRMAKEFILESOURCE
   PGBUILD: $(APPVEYOR_BUILD_FOLDER)\PGBUILD
-  R_HOME: $(APPVEYOR_BUILD_FOLDER)\RINSTALL
   PGINSTALL: $(APPVEYOR_BUILD_FOLDER)\PGINSTALL
+  R_HOME: $(APPVEYOR_BUILD_FOLDER)\RINSTALL
   ZIPTMP: $(APPVEYOR_BUILD_FOLDER)\ZIPTMP
   matrix:
     - MSYSTEM: MINGW64
@@ -43,16 +43,20 @@ environment:
 # JAN 2021
 # https://www.appveyor.com/docs/how-to/rdp-to-build-worker/
 
-# collect IP and username for rdp
+# collect IP and username for a Microsoft Remote Desktop Connection (rdc)
 init:
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  #
-  # mypaint (adds to path to make pacman available during the install stage)
+
+  # PATH: I am adding to the PATH, to make "pacman" available during the Appveyor "install" stage.
+  # SEE mypaint
   # https://github.com/mypaint/mypaint/blob/4141a6414b77dcf3e3e62961f99b91d466c6fb52/.appveyor.yml
+  #
   - PATH C:\msys64\%MSYSTEM%\bin;C:\msys64\usr\bin;C:\msys64\bin;%PATH%
 
 install:
+
   - echo BEGIN APPVEYOR INSTALL
+
   - echo on
   - set
   #
@@ -87,9 +91,17 @@ install:
   - git clone --depth 1 --single-branch --branch=%PG_GIT_BRANCH% https://github.com/postgres/postgres.git %PGSOURCE%
   - git clone --depth 1 --single-branch --branch=%PLR_TAG%       https://github.com/postgres-plr/plr.git  %PLRSOURCE%
   - git clone --depth 1 --single-branch --branch=master          https://github.com/AndreMikulec/postgresql_ext_plr_Makefile.git %PLRMAKEFILESOURCE%
+
+  # From
+  # https://github.com/postgres-plr/plpostgres-plr/plr/appveyor.yml
+  #
   - appveyor downloadfile https://cran.r-project.org/bin/windows/base/old/%R_OLD_VERSION%/R-%R_OLD_VERSION%-win.exe
   - appveyor downloadfile https://cran.r-project.org/bin/windows/base/old/%R_CUR_VERSION%/R-%R_CUR_VERSION%-win.exe
 
+  # MSYS2 updates
+  # SEE mypaint
+  # https://github.com/mypaint/mypaint/blob/4141a6414b77dcf3e3e62961f99b91d466c6fb52/.appveyor.yml
+  #
   - echo BEGIN MSYS2 UPGRADE
   - pacman --noconfirm -Syuu
   - pacman --noconfirm -Suu
@@ -98,105 +110,117 @@ install:
   - echo END   APPVEYOR INSTALL
 
 build_script:
+
   - echo BEGIN APPVEYOR BUILD_SCRIPT
 
+  # Andre Mikulec experiments and
+  # https://github.com/postgres-plr/plpostgres-plr/plr/appveyor.yml
+  #
+  # NOTE, this is an attempt to do a single architecture install.
+  # HOWEVER, NOW, this is always an "R subarchitecture" install.  When did that change?
+  #
+  # Note: Rscript --vanilla --quiet -e shell('set') | findstr /R "^R_ARCH"
+  # R_ARCH=/x64
+  # R_ARCH=/i386
+  #
   # place OLD R on disk
+  #
   - R-%R_OLD_VERSION%-win.exe /SP- /VERYSILENT /DIR=%R_HOME% /COMPONENTS=main%COMPONENTS_ARCH%,translations /NOICONS /TASKS=
-  
-  # prepare to build postgres
-  - sh -l -c "mkdir ${PGBUILD}"
-  
-  # build postgres
-  - cmd: |
-     sh -l -c "
-     echo BEGIN POSTGRESQL BUILD
-     cd ${PGBUILD}
-     ${PGSOURCE}/configure --prefix=${PGINSTALL}
-     make
-     cd -
-     echo END POSTGRESQL BUILD "
-     
-  # copy PLR code and its Makefile
-  - cmd: |
-     sh -l -c "
-     echo BEGIN PLR FILES SETUP
-     cp ${PLRSOURCE}                   ${PGSOURCE}/contrib
-     rm                                ${PGSOURCE}/contrib/plr/Makefile
-     cp ${PLRMAKEFILESOURCE}/Makefile  ${PGSOURCE}/contrib/plr
-     
-     mkdir -p                          ${PGBUILD}/contrib/plr
-     cp ${PLRMAKEFILESOURCE}/Makefile  ${PGBUILD}/contrib/plr
-     mkdir -p                          ${PGBUILD}/contrib/plr/sql
-     mkdir -p                          ${PGBUILD}/contrib/plr/expected
-     echo END  PLR FILES SETUP "
-     
-  # build OLD R PLR
-  - cmd: |
-     sh -l -c "
-     echo BEGIN PLR BUILD
-     cd ${PGBUILD}/contrib/plr
-     export R_HOME=$(cygpath -u ${R_HOME})
-     export R_ARCH=$(echo ${R_ARCH} | sed ''s@\\@/@'')
-     make
-     make install
-     make clean
-     cd -
-     echo END  PLR BUILD "
 
-  # save OLD R PLR in zip
-  - mkdir %ZIPTMP%
-  - mkdir %ZIPTMP%\lib     
-  - mkdir %ZIPTMP%\share
-  - cp ${PGINSTALL}\lib\postgresql\plr.dll          %ZIPTMP%\lib 
-  - cp ${PGINSTALL}\share\postgresql\extension\*.*  %ZIPTMP%\share
-  - cp ${PLRSOURCE}/LICENSE                         %ZIPTMP%\PLR_LICENSE
+  # prepare to build postgres
+  #
+  - sh -l -c "mkdir ${PGBUILD}"
+
+  # build postgres
+  #
+  - echo BEGIN POSTGRESQL BUILD
+  - sh -l -c "cd ${PGBUILD} && ${PGSOURCE}/configure --prefix=${PGINSTALL}
+  - echo END   POSTGRESQL BUILD
+
+  # copy the PLR code and the correct Makefile to PGSOURCE
+  #
+  - echo BEGIN PLR FILES SETUP
+  - copy /V %PLRSOURCE%                   %PGSOURCE%\contrib
+  - del                                   %PGSOURCE%\contrib\plr\Makefile
+  - copy /V %PLRMAKEFILESOURCE%/Makefile  %PGSOURCE%\contrib\plr
+
+  # copy the correct Makefile to PGBUILD
+  #
+  - mkdir                                %PGBUILD%\contrib\plr
+  - copy /V %PLRMAKEFILESOURCE%/Makefile %PGBUILD%\contrib\plr
+  - mkdir                                %PGBUILD%\contrib\plr\sql
+  - mkdir                                %PGBUILD%\contrib\plr\expected
+  - echo END  PLR FILES SETUP
+
+  # build OLD R PLR
+  #
+  - echo BEGIN OLD R PLR BUILD
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make"
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make install"
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make clean"
+  - echo END  OLD R PLR BUILD "
+
+  # save OLD R PLR in a zip
+  #
+  - echo BEGIN SAVE OLD PLR
+  - mkdir    %ZIPTMP%
+  - copy  /V %PLRSOURCE%\LICENSE                           %ZIPTMP%\PLR_LICENSE
+  - mkdir    %ZIPTMP%\lib
+  - copy  /V %PGINSTALL%\lib\postgresql\plr*.*             %ZIPTMP%\lib
+  - mkdir    %ZIPTMP%\share
+  - copy  /V %PGINSTALL%share\postgresql\extension\plr*.*  %ZIPTMP%\share
   - set ZIP=%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_VERSION%.zip
-  - 7z a %APPVEYOR_BUILD_FOLDER%\%ZIP% %ZIPTMP%
+  - 7z a %ZIP% %ZIPTMP%\*
+  #
   # clean up
+  #
   - del /S /F /Q %ZIPTMP%
-     
+  - del /Q %PGINSTALL%\lib\postgresql\plr*.*
+  - del /Q %PGINSTALL%share\postgresql\extension\plr*.*
+  - echo END   SAVE OLD PLR
+
   # place CUR R on disk
+  #
   - del /S /F /Q %R_HOME%
   - R-%R_CUR_VERSION%-win.exe /SP- /VERYSILENT /DIR=%R_HOME% /COMPONENTS=main%COMPONENTS_ARCH%,translations /NOICONS /TASKS=
-     
-  # build CUR R PLR
-  - cmd: |
-     sh -l -c "
-     echo BEGIN PLR BUILD
-     cd ${PGBUILD}/contrib/plr
-     export R_HOME=$(cygpath -u ${R_HOME})
-     export R_ARCH=$(echo ${R_ARCH} | sed ''s@\\@/@'')
-     make
-     make install
-     make clean
-     cd -
-     echo END  PLR BUILD "
-     
-  # save CUR R PLR in zip
-  - mkdir %ZIPTMP%
-  - mkdir %ZIPTMP%\lib     
-  - mkdir %ZIPTMP%\share
-  - cp ${PGINSTALL}\lib\postgresql\plr.dll          %ZIPTMP%\lib 
-  - cp ${PGINSTALL}\share\postgresql\extension\*.*  %ZIPTMP%\share
-  - cp ${PLRSOURCE}/LICENSE                         %ZIPTMP%\PLR_LICENSE
-  - set ZIP=%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_VERSION%.zip
-  - 7z a %APPVEYOR_BUILD_FOLDER%\%ZIP% %ZIPTMP%
-  # clean up
-  - del /S /F /Q %ZIPTMP%
 
-  # actually I did not leave
-  - cd  %APPVEYOR_BUILD_FOLDER%
-     
+  # build CUR R PLR
+  #
+  - echo BEGIN CUR R PLR BUILD
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make"
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make install"
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make clean"
+  - echo END  CUR R PLR BUILD "
+
+  # save CUR R PLR in zip
+  #
+  - echo BEGIN SAVE CUR PLR
+  - mkdir   %ZIPTMP%
+  - copy /V %PLRSOURCE%\LICENSE                           %ZIPTMP%\PLR_LICENSE
+  - mkdir   %ZIPTMP%\lib
+  - copy /V %PGINSTALL%\lib\postgresql\plr*.*             %ZIPTMP%\lib
+  - mkdir   %ZIPTMP%\share
+  - copy /V %PGINSTALL%share\postgresql\extension\plr*.*  %ZIPTMP%\share
+  - set ZIP=%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_VERSION%.zip
+  - 7z a %ZIP% %ZIPTMP%\*
+  #
+  # clean up
+  #
+  - del /S /F /Q %ZIPTMP%
+  - del /Q %PGINSTALL%\lib\postgresql\plr*.*
+  - del /Q %PGINSTALL%share\postgresql\extension\plr*.*
+  - echo END   SAVE CUR PLR
+
   - echo END   APPVEYOR BUILD_SCRIPT
-  
+
 artifacts:
   - path: "%APPVEYOR_BUILD_FOLDER%\\%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_VERSION%.zip"
     name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_VERSION%.zip"
   - path: "%APPVEYOR_BUILD_FOLDER%\\%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_VERSION%.zip"
     name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_VERSION%.zip"
-    
+
 deploy:
-  release: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_PLR_%PLR_VERSION%.zip"
+  release: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_PLR_%PLR_VERSION%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%"
   provider: GitHub
   auth_token:
     secure: KzS1DumC2yBg2LGN9x3AemHFOjAdp+rD58rW5aGGpwW4Pfdwdm7AmRpYKprPY8Gs
@@ -208,4 +232,3 @@ deploy:
 # on_finish:
 #   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 # # remove locking file from the desktop
-  
