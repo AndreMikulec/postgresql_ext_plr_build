@@ -121,7 +121,6 @@ build_script:
   # build postgres
   #
   - echo BEGIN POSTGRESQL BUILD
-  - sh -l -c "echo \"cd ${PGBUILD} && ${PGSOURCE}/configure --prefix=${PGINSTALL}\""
   - sh -l -c "cd ${PGBUILD} && ${PGSOURCE}/configure --prefix=${PGINSTALL}"
   - echo END   POSTGRESQL BUILD
 
