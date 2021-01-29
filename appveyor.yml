@@ -18,14 +18,11 @@ skip_commits:
   files:
     - readme.*
 
-# Accessing Windows build worker via Remote Desktop
-# JAN 2021
-# https://www.appveyor.com/docs/how-to/rdp-to-build-worker/
+# Build worker image (VM template)
+image: Visual Studio 2019
 
-# collect IP and username for rdp
-init:
-  # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  - PATH C:\msys64\%MSYSTEM%\bin;C:\msys64\usr\bin;C:\msys64\bin;%PATH%
+# set clone depth
+clone_depth: 1
 
 environment:
   PLR_VERSION: 8.4.1
@@ -44,7 +41,18 @@ environment:
       PLR_TAG: REL8_4_1
       R_OLD_VERSION: 3.6.3
       R_CUR_VERSION: 4.0.3
-    
+
+# Accessing Windows build worker via Remote Desktop
+# JAN 2021
+# https://www.appveyor.com/docs/how-to/rdp-to-build-worker/
+
+# collect IP and username for rdp
+init:
+  # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  # mypaint
+  # https://github.com/mypaint/mypaint/blob/4141a6414b77dcf3e3e62961f99b91d466c6fb52/.appveyor.yml
+  - PATH C:\msys64\%MSYSTEM%\bin;C:\msys64\usr\bin;C:\msys64\bin;%PATH%
+
 install:
   - echo BEGIN APPVEYOR INSTALL
   - echo on
