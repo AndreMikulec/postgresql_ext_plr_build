@@ -143,12 +143,12 @@ build_script:
   - mkdir                                       %PGSOURCE%\contrib\plr    
   - xcopy /E /V /F %PLRSOURCE%\*                %PGSOURCE%\contrib\plr
   - del                                         %PGSOURCE%\contrib\plr\Makefile
-  - xcopy    /V /F %PLRMAKEFILESOURCE%/Makefile %PGSOURCE%\contrib\plr
+  - xcopy    /V /F %PLRMAKEFILESOURCE%\Makefile %PGSOURCE%\contrib\plr
 
   # copy the correct Makefile to PGBUILD
   #
   - mkdir                                       %PGBUILD%\contrib\plr
-  - xcopy    /V /F %PLRMAKEFILESOURCE%/Makefile %PGBUILD%\contrib\plr
+  - xcopy    /V /F %PLRMAKEFILESOURCE%\Makefile %PGBUILD%\contrib\plr
   - mkdir                                       %PGBUILD%\contrib\plr\sql
   - mkdir                                       %PGBUILD%\contrib\plr\expected
   - echo END  PLR FILES SETUP
