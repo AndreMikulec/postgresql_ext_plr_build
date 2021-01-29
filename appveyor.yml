@@ -7,9 +7,16 @@ skip_tags: true
 # Start builds on tags only (GitHub and BitBucket)
 # skip_non_tags: true
 
+# set clone depth
+clone_depth: 1
+
 branches:
   only:
     - master
+
+skip_commits:
+  files:
+    - readme.*
 
 # Accessing Windows build worker via Remote Desktop
 # JAN 2021
@@ -24,7 +31,7 @@ environment:
   PLR_VERSION: 8.4.1
   PGSOURCE:  $(APPVEYOR_BUILD_FOLDER)\postgres
   PLRSOURCE:  $(APPVEYOR_BUILD_FOLDER)\plr
-  PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\Makefile
+  PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\PLRMAKEFILESOURCE
   PGBUILD: $(APPVEYOR_BUILD_FOLDER)\PGBUILD
   R_HOME: $(APPVEYOR_BUILD_FOLDER)\RINSTALL
   PGINSTALL: $(APPVEYOR_BUILD_FOLDER)\PGINSTALL
@@ -76,15 +83,14 @@ install:
   - git clone --depth 1 --single-branch --branch=master          https://github.com/AndreMikulec/postgresql_ext_plr_Makefile.git %PLRMAKEFILESOURCE%
   - appveyor downloadfile https://cran.r-project.org/bin/windows/base/old/%R_OLD_VERSION%/R-%R_OLD_VERSION%-win.exe
   - appveyor downloadfile https://cran.r-project.org/bin/windows/base/old/%R_CUR_VERSION%/R-%R_CUR_VERSION%-win.exe
-  - cmd: |
-     sh -l -c "
-     echo BEGIN MSYS2 UPGRADE
-     pacman --noconfirm -Syuu
-     pacman --noconfirm -Suu
-     echo END   MSYS2 UPGRADE "
-     
+
+  - echo BEGIN MSYS2 UPGRADE
+  - pacman --noconfirm -Syuu
+  - pacman --noconfirm -Suu
+  - echo END   MSYS2 UPGRADE
+
   - echo END   APPVEYOR INSTALL
-  
+
 build_script:
   - echo BEGIN APPVEYOR BUILD_SCRIPT
 
