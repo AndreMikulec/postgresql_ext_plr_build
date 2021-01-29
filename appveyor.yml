@@ -34,6 +34,7 @@ environment:
     - MSYSTEM: MINGW64
       PG_GIT_BRANCH: REL_13_STABLE
       R_ARCH: \x64
+      R_ARCH_NIX: /x64
       COMPONENTS_ARCH: ',x64'
       PLR_TAG: REL8_4_1
       R_OLD_VERSION: 3.6.3
@@ -156,9 +157,9 @@ build_script:
   # build OLD R PLR
   #
   - echo BEGIN OLD R PLR BUILD
-  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make"
-  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make install"
-  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make clean"
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;make"
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;make install"
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;make clean"
   - echo END  OLD R PLR BUILD "
 
   # save OLD R PLR in a zip
@@ -188,9 +189,9 @@ build_script:
   # build CUR R PLR
   #
   - echo BEGIN CUR R PLR BUILD
-  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make"
-  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make install"
-  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$(echo $R_ARCH | sed s''@\\@/@'');echo $R_ARCH;make clean"
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;make"
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;make install"
+  - sh -l -c "cd ${PGBUILD}/contrib/plr;export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;make clean"
   - echo END  CUR R PLR BUILD "
 
   # save CUR R PLR in zip
