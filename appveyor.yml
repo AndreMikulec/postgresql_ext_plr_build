@@ -1,0 +1,199 @@
+
+version: 0.1.0-{build}-{branch}
+
+# Do not build on tags (GitHub and BitBucket)
+skip_tags: true
+
+# Start builds on tags only (GitHub and BitBucket)
+# skip_non_tags: true
+
+branches:
+  only:
+    - master
+
+# Accessing Windows build worker via Remote Desktop
+# JAN 2021
+# https://www.appveyor.com/docs/how-to/rdp-to-build-worker/
+
+# collect IP and username for rdp
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+image: Visual Studio 2019
+environment:
+  PLR_VERSION: 8.4.1
+  PGSOURCE:  $(APPVEYOR_BUILD_FOLDER)\postgres
+  PLRSOURCE:  $(APPVEYOR_BUILD_FOLDER)\plr
+  PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\Makefile
+  PGBUILD: $(APPVEYOR_BUILD_FOLDER)\PGBUILD
+  R_HOME: $(APPVEYOR_BUILD_FOLDER)\RINSTALL
+  PGINSTALL: $(APPVEYOR_BUILD_FOLDER)\PGINSTALL
+  ZIPTMP: $(APPVEYOR_BUILD_FOLDER)\ZIPTMP
+  matrix:
+    - MSYSTEM: MINGW64
+      PG_GIT_BRANCH: REL_13_STABLE
+      R_ARCH: \x64
+      COMPONENTS_ARCH: ',x64'
+      PLR_TAG: REL8_4_1
+      R_OLD_VERSION: 3.6.3
+      R_CUR_VERSION: 4.0.3
+    
+install:
+  - echo BEGIN APPVEYOR INSTALL
+  - echo on
+  - set
+  #
+  # MSYS2_PATH_TYPE=inherit
+  # MSYSTEM=MINGW64
+  # xor
+  # MSYSTEM=MINGW32
+  #
+  - sh -l -c "export"
+  #
+  # export MINGW_CHOST="x86_64-w64-mingw32"
+  # export MINGW_PACKAGE_PREFIX="mingw-w64-x86_64"
+  # export MINGW_PREFIX="/mingw64"
+  # export MSYS2_PATH_TYPE="inherit"
+  # export MSYSTEM="MINGW64"
+  # export MSYSTEM_CARCH="x86_64"
+  # export MSYSTEM_CHOST="x86_64-w64-mingw32"
+  # export MSYSTEM_PREFIX="/mingw64"
+  #
+  # export MINGW_CHOST="i686-w64-mingw32"
+  # export MINGW_PACKAGE_PREFIX="mingw-w64-i686"
+  # export MINGW_PREFIX="/mingw32"
+  # export MSYS2_PATH_TYPE="inherit"
+  # export MSYSTEM="MINGW32"
+  # export MSYSTEM_CARCH="i686"
+  # export MSYSTEM_CHOST="i686-w64-mingw32"
+  # export MSYSTEM_PREFIX="/mingw32"
+  #
+  - echo %CD%
+  - echo %APPVEYOR_BUILD_FOLDER%
+
+  - git clone --depth 1 --single-branch --branch=%PG_GIT_BRANCH% https://github.com/postgres/postgres.git %PGSOURCE%
+  - git clone --depth 1 --single-branch --branch=%PLR_TAG%       https://github.com/postgres-plr/plr.git  %PLRSOURCE%
+  - git clone --depth 1 --single-branch --branch=master          https://github.com/AndreMikulec/postgresql_ext_plr_Makefile.git %PLRMAKEFILESOURCE%
+  - appveyor downloadfile https://cran.r-project.org/bin/windows/base/old/%R_OLD_VERSION%/R-%R_OLD_VERSION%-win.exe
+  - appveyor downloadfile https://cran.r-project.org/bin/windows/base/old/%R_CUR_VERSION%/R-%R_CUR_VERSION%-win.exe
+  - cmd: |
+     sh -l -c "
+     echo BEGIN MSYS2 UPGRADE
+     pacman --noconfirm -Syuu
+     pacman --noconfirm -Suu
+     echo END   MSYS2 UPGRADE "
+     
+  - echo END   APPVEYOR INSTALL
+  
+build_script:
+  - echo BEGIN APPVEYOR BUILD_SCRIPT
+
+  # place OLD R on disk
+  - R-%R_OLD_VERSION%-win.exe /SP- /VERYSILENT /DIR=%R_HOME% /COMPONENTS=main%COMPONENTS_ARCH%,translations /NOICONS /TASKS=
+  
+  # prepare to build postgres
+  - sh -l -c "mkdir ${PGBUILD}"
+  
+  # build postgres
+  - cmd: |
+     sh -l -c "
+     echo BEGIN POSTGRESQL BUILD
+     cd ${PGBUILD}
+     ${PGSOURCE}/configure --prefix=${PGINSTALL}
+     make
+     cd -
+     echo END POSTGRESQL BUILD "
+     
+  # copy PLR code and its Makefile
+  - cmd: |
+     sh -l -c "
+     echo BEGIN PLR FILES SETUP
+     cp ${PLRSOURCE}                   ${PGSOURCE}/contrib
+     rm                                ${PGSOURCE}/contrib/plr/Makefile
+     cp ${PLRMAKEFILESOURCE}/Makefile  ${PGSOURCE}/contrib/plr
+     
+     mkdir -p                          ${PGBUILD}/contrib/plr
+     cp ${PLRMAKEFILESOURCE}/Makefile  ${PGBUILD}/contrib/plr
+     mkdir -p                          ${PGBUILD}/contrib/plr/sql
+     mkdir -p                          ${PGBUILD}/contrib/plr/expected
+     echo END  PLR FILES SETUP "
+     
+  # build OLD R PLR
+  - cmd: |
+     sh -l -c "
+     echo BEGIN PLR BUILD
+     cd ${PGBUILD}/contrib/plr
+     export R_HOME=$(cygpath -u ${R_HOME})
+     export R_ARCH=$(echo ${R_ARCH} | sed ''s@\\@/@'')
+     make
+     make install
+     make clean
+     cd -
+     echo END  PLR BUILD "
+
+  # save OLD R PLR in zip
+  - mkdir %ZIPTMP%
+  - mkdir %ZIPTMP%\lib     
+  - mkdir %ZIPTMP%\share
+  - cp ${PGINSTALL}\lib\postgresql\plr.dll          %ZIPTMP%\lib 
+  - cp ${PGINSTALL}\share\postgresql\extension\*.*  %ZIPTMP%\share
+  - cp ${PLRSOURCE}/LICENSE                         %ZIPTMP%\PLR_LICENSE
+  - set ZIP=%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_VERSION%.zip
+  - 7z a %APPVEYOR_BUILD_FOLDER%\%ZIP% %ZIPTMP%
+  # clean up
+  - del /S /F /Q %ZIPTMP%
+     
+  # place CUR R on disk
+  - del /S /F /Q %R_HOME%
+  - R-%R_CUR_VERSION%-win.exe /SP- /VERYSILENT /DIR=%R_HOME% /COMPONENTS=main%COMPONENTS_ARCH%,translations /NOICONS /TASKS=
+     
+  # build CUR R PLR
+  - cmd: |
+     sh -l -c "
+     echo BEGIN PLR BUILD
+     cd ${PGBUILD}/contrib/plr
+     export R_HOME=$(cygpath -u ${R_HOME})
+     export R_ARCH=$(echo ${R_ARCH} | sed ''s@\\@/@'')
+     make
+     make install
+     make clean
+     cd -
+     echo END  PLR BUILD "
+     
+  # save CUR R PLR in zip
+  - mkdir %ZIPTMP%
+  - mkdir %ZIPTMP%\lib     
+  - mkdir %ZIPTMP%\share
+  - cp ${PGINSTALL}\lib\postgresql\plr.dll          %ZIPTMP%\lib 
+  - cp ${PGINSTALL}\share\postgresql\extension\*.*  %ZIPTMP%\share
+  - cp ${PLRSOURCE}/LICENSE                         %ZIPTMP%\PLR_LICENSE
+  - set ZIP=%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_VERSION%.zip
+  - 7z a %APPVEYOR_BUILD_FOLDER%\%ZIP% %ZIPTMP%
+  # clean up
+  - del /S /F /Q %ZIPTMP%
+
+  # actually I did not leave
+  - cd  %APPVEYOR_BUILD_FOLDER%
+     
+  - echo END   APPVEYOR BUILD_SCRIPT
+  
+artifacts:
+  - path: "%APPVEYOR_BUILD_FOLDER%\\%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_VERSION%.zip"
+    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_VERSION%.zip"
+  - path: "%APPVEYOR_BUILD_FOLDER%\\%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_VERSION%.zip"
+    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_VERSION%.zip"
+    
+deploy:
+  release: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_PLR_%PLR_VERSION%.zip"
+  provider: GitHub
+  auth_token:
+    secure: KzS1DumC2yBg2LGN9x3AemHFOjAdp+rD58rW5aGGpwW4Pfdwdm7AmRpYKprPY8Gs
+  draft: false
+  prerelease: false
+  on:
+    branch: master
+
+# on_finish:
+#   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+# # remove locking file from the desktop
+  
