@@ -128,8 +128,8 @@ build_script:
   # Links "abs_top_builddir" back to the "abs_top_srcdir" directory.
   #
   - echo PGBUILD to PGSOURCE links follow
-  - sh -l -c "cat $PGBUILD/src/Makefile.global | grep ^abs"
-  - sh -l -c "cat $PGBUILD/src/Makefile.global | grep ^CPPFLAGS"
+  - sh -l -c "cat $PGBUILD/src/Makefile.global | grep ''^abs''"
+  - sh -l -c "cat $PGBUILD/src/Makefile.global | grep ''^CPPFLAGS''"
   #
   # If these are wrong then re-run configure !!!
   # If these are wrong then re-run configure !!!
