@@ -23,6 +23,8 @@ image: Visual Studio 2019
 clone_depth: 1
 
 environment:
+  BETTERPERL32URL: https://strawberryperl.com/download/5.32.1.1/strawberry-perl-5.32.1.1-32bit-portable.zip
+  BETTERPERL64URL: https://strawberryperl.com/download/5.32.1.1/strawberry-perl-5.32.1.1-64bit-portable.zip
   PGSOURCE:  $(APPVEYOR_BUILD_FOLDER)\postgres
   PLRSOURCE:  $(APPVEYOR_BUILD_FOLDER)\plr
   PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\PLRMAKEFILESOURCE\plr
@@ -32,6 +34,7 @@ environment:
   ZIPTMP: $(APPVEYOR_BUILD_FOLDER)\ZIPTMP
   matrix:
     - MSYSTEM: MINGW64
+      BETTERPERLURL: $(BETTERPERL64URL)
       PG_GIT_BRANCH: REL_13_STABLE
       PLR_TAG: REL8_4_1
       R_ARCH: /x64
@@ -131,10 +134,10 @@ build_script:
   - bash --login -c "$(cygpath ${APPVEYOR_BUILD_FOLDER})/full-build.sh"
   
 artifacts:
-  - path: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.zip"
-    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.zip"
-  - path: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%.zip"
-    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%.zip"
+  - path: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.tar.gz"
+    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%"
+  - path: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%.tar.gz"
+    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%"
 
 deploy:
   release: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_PLR_%PLR_TAG%"
