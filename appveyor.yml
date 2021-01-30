@@ -128,7 +128,7 @@ install:
   - echo END   APPVEYOR INSTALL
   
 build_script:
-  - C:\rtools40\usr\bin\bash --login -c "$(cygpath ${APPVEYOR_BUILD_FOLDER})/full-build.sh"
+  - bash --login -c "$(cygpath ${APPVEYOR_BUILD_FOLDER})/full-build.sh"
   
 artifacts:
   - path: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.zip"
