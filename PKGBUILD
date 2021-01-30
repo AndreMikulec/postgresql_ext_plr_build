@@ -1,6 +1,10 @@
 
 set -v -x
 
+loginfo "BEGIN file PKGBUILD"
+
+
+
 # Maintainer: Andre Mikulec <Andre_Mikulec@Hotmail.com>
 _realname=postgres-plr
 pkgbase=${_realname}
@@ -19,6 +23,8 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
 
 license=("GPL")
 
+
+
 export PGSOURCE=$(cygpath -u "${PGSOURCE}")
 export PLRSOURCE=$(cygpath -u "${PLRSOURCE}")
 export PLRMAKEFILESOURCE=$(cygpath -u "${PLRMAKEFILESOURCE}")
@@ -27,7 +33,35 @@ export PGINSTALL=$(cygpath -u "${PGINSTALL}")
 export R_HOME=$(cygpath -u "${R_HOME}")
 export ZIPTMP=$(cygpath -u "${ZIPTMP}")
 
+
+
+# hopefully should not matter, but I feel more compfortable
+export APPVEYOR_BUILD_FOLDER=$(cygpath -u "${APPVEYOR_BUILD_FOLDER}")
+
+
+
+# everytime I enter MSYS2 (using any method), this is
+# pre-pended to the beginning of the path . . .
+# /mingw64/bin:/usr/local/bin:/usr/bin:/bin:
+
+# but I want Strawberry Perl to be in front, so I will manually do that HERE now
+export PATH=${APPVEYOR_BUILD_FOLDER}/${BETTERPERL}/perl/bin:$PATH
+
+# also, so I need "pexports", that is needed when,
+# I try to use "postresql source code from git" to build postgres
+# ("pexports" is not needed when I use the "downloadable postgrsql" source code)
+export PATH=$PATH:${APPVEYOR_BUILD_FOLDER}/${BETTERPERL}/c/bin
+
+which perl
+which pexports
+
+
+
 export
+
+loginfo "BEGIN file PKGBUILD pwd"
+pwd
+loginfo "END   file PKGBUILD pwd"
 
 
 #
@@ -76,9 +110,16 @@ package() {
   if [ ! -f "${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz" ]
   then
     ${PGSOURCE}/configure --enable-depend --disable-rpath --prefix=${PGINSTALL}
-    tar -zcvf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz *
+    loginfo "BEGIN tar CREATION"
+    ls -alrt ${APPVEYOR_BUILD_FOLDER}
+    tar -zcf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz *
+    ls -alrt ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz
+    loginfo "END   tar CREATION"
+    lo
   else
-    tar -zxvf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz
+    loginfo "BEGIN tar EXTRACTION"
+    tar -zxf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz
+    loginfo "END   tar EXTRACTION"
   fi
   cd -
   loginfo "END   PKGBUILD package POSTGRESQL CONFIGURE"
@@ -110,9 +151,15 @@ package() {
   if [ ! -f "${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz" ]
   then
     make
-    tar -zcvf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz *
+    loginfo "BEGIN tar CREATION"
+    ls -alrt ${APPVEYOR_BUILD_FOLDER}
+    tar -zcf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz *
+    ls -alrt ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz
+    loginfo "END   tar CREATION"
   else
-    tar -zxvf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz
+    loginfo "BEGIN tar EXTRACTION"
+    tar -zxf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz
+    loginfo "END   tar EXTRACTION"
   fi
 
   cd -
@@ -181,7 +228,9 @@ package() {
   export ZIP=PLR_${PLR_TAG}_${MSYSTEM}_PG_${PG_GIT_BRANCH}_R_${R_OLD_VERSION}.tar.gz
   echo ${ZIP}
   cd ${ZIPTMP}
+  loginfo "BEGIN tar CREATION"
   tar -zcvf ${APPVEYOR_BUILD_FOLDER}/${ZIP} *
+  loginfo "END   tar CREATION"
   cd -
   #
   # clean up
@@ -229,7 +278,9 @@ package() {
   export ZIP=PLR_${PLR_TAG}_${MSYSTEM}_PG_${PG_GIT_BRANCH}_R_${R_OLD_VERSION}.tar.gz
   echo ${ZIP}
   cd ${ZIPTMP}
+  loginfo "BEGIN tar CREATION"
   tar -zcvf ${APPVEYOR_BUILD_FOLDER}/${ZIP} *
+  loginfo "END   tar CREATION"
   cd -
   #
   # clean up
@@ -278,5 +329,7 @@ logerr() {
 }
 
 
+
+loginfo "END   file PKGBUILD"
 
 set +v +x

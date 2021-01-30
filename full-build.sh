@@ -2,6 +2,9 @@
 
 set -v -x
 
+loginfo "BEGIN file full-build.sh"
+
+
 
 # ANSI control codes
 CYAN='\033[0;36m'
@@ -45,5 +48,7 @@ loginfo() {
 }
 
 
+
+loginfo "END   file full-build.sh"
 
 set +v +x

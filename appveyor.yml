@@ -102,6 +102,7 @@ environment:
 # collect IP and username for a Microsoft Remote Desktop Connection (rdc)
 init:
   - "@echo off"
+  - echo BEGIN file appveyor.yml
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
   # PATH: I am adding to the PATH, to make "pacman" available during the Appveyor "install" stage.
@@ -154,6 +155,11 @@ install:
   #
   - echo %CD%
   - echo %APPVEYOR_BUILD_FOLDER%
+
+  # says: Build exceeded allowed resource quotas
+  # Builds have not only a disk space limitation bu also an incoming web traffic limitation of 7GB.
+  # Jul 15, 2019
+  # https://help.appveyor.com/discussions/problems/24408-not-enough-disk-sapce
 
   # needed to acquire source code
   - pacman -S --noconfirm --needed msys/git
@@ -221,21 +227,9 @@ install:
   #
   # put the better perl in front of the path
   #
-  - set PATH=%APPVEYOR_BUILD_FOLDER%\%BETTERPERL%\perl\bin;%PATH%
-  # - set PATH=C:\Strawberry\perl\bin;%PATH%
-
-  # postgres build from git(github) needs "pexports"
+  # put pexports at the end of the path
   #
-  # (the downloadable non-git postgresql source code does not need "pexports")
-  #
-  - set PATH=%PATH%;%APPVEYOR_BUILD_FOLDER%\%BETTERPERL%\c\bin
-  # - set PATH=%PATH%;C:\Strawberry\c\bin
-
-  - echo END   BETTER PERL
-  - set
-  - sh -l -c "export"
-  - sh -l -c "which perl"
-  - sh -l -c "which pexports"
+  # done LATER in PKGBUILD
 
   - echo END   APPVEYOR INSTALL
 
@@ -324,6 +318,7 @@ deploy:
 
 
 
-# on_finish:
+on_finish:
 #   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 # # remove locking file from the desktop
+  - echo END   file appveyor.yml
