@@ -153,6 +153,7 @@ package() {
   else
     loginfo "BEGIN tar EXTRACTION"
     tar -zxf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz
+    ls -alrt ${PGBUILD}
     loginfo "END   tar EXTRACTION"
   fi
   cd -
@@ -193,6 +194,7 @@ package() {
   else
     loginfo "BEGIN tar EXTRACTION"
     tar -zxf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz
+    ls -alrt ${PGBUILD}
     loginfo "END   tar EXTRACTION"
   fi
 
@@ -210,14 +212,14 @@ package() {
   # copy the PLR code and the correct Makefile to PGSOURCE
   #
   mkdir -p                                      ${PGSOURCE}/contrib/plr
-  cp -r    ${PLRSOURCE}/*                       ${PGSOURCE}/contrib/plr
+  cp -r -p ${PLRSOURCE}/*                       ${PGSOURCE}/contrib/plr
   rm                                            ${PGSOURCE}/contrib/plr/Makefile
-  cp       ${PLRMAKEFILESOURCE}/Makefile        ${PGSOURCE}/contrib/plr
+  cp    -p ${PLRMAKEFILESOURCE}/Makefile        ${PGSOURCE}/contrib/plr
   #
   # copy the correct Makefile to PGBUILD
   #
   mkdir -p                                      ${PGBUILD}/contrib/plr
-  cp       ${PLRMAKEFILESOURCE}/Makefile        ${PGBUILD}/contrib/plr
+  cp    -p ${PLRMAKEFILESOURCE}/Makefile        ${PGBUILD}/contrib/plr
   mkdir -p                                      ${PGBUILD}/contrib/plr/sql
   mkdir -p                                      ${PGBUILD}/contrib/plr/expected
   #
@@ -243,8 +245,17 @@ package() {
   export R_HOME=${R_HOME_ORIG}
   loginfo "END  PKGBUILD package OLD R PLR BUILD AND INSTALL"
   pwd
-  ls -alrt ${PGINSTALL}/lib/postgresql/plr*.*
-  ls -alrt ${PGINSTALL}/share/postgresql/extension/plr*.*
+  #
+  # some weirdness (something env specific)
+  if [ ! -d "${PGINSTALL}/share/postgresql" ]
+  then
+    local DIRPOSTGRESQL=""
+  else
+    local DIRPOSTGRESQL="/postgresql"
+  fi
+  #
+  ls -alrt ${PGINSTALL}/lib${DIRPOSTGRESQL}/plr*.*
+  ls -alrt ${PGINSTALL}/share${DIRPOSTGRESQL}/extension/plr*.*
 
 
 
@@ -252,12 +263,12 @@ package() {
   #
   # save OLD R PLR in a zip
   #
-  mkdir -p                                                ${ZIPTMP}
-  cp       ${PLRSOURCE}/LICENSE                           ${ZIPTMP}/PLR_LICENSE
-  mkdir -p                                                ${ZIPTMP}/lib
-  cp -r    ${PGINSTALL}/lib/postgresql/plr*.*             ${ZIPTMP}/lib
-  mkdir -p                                                ${ZIPTMP}/share
-  cp -r    ${PGINSTALL}/share/postgresql/extension/plr*.* ${ZIPTMP}/share
+  mkdir -p                                                     ${ZIPTMP}
+  cp    -p ${PLRSOURCE}/LICENSE                                ${ZIPTMP}/PLR_LICENSE
+  mkdir -p                                                     ${ZIPTMP}/lib
+  cp -r -p ${PGINSTALL}/lib${DIRPOSTGRESQL}/plr*.*             ${ZIPTMP}/lib
+  mkdir -p                                                     ${ZIPTMP}/share
+  cp -r -p ${PGINSTALL}/share${DIRPOSTGRESQL}/extension/plr*.* ${ZIPTMP}/share
   #
   export ZIP=PLR_${PLR_TAG}_${MSYSTEM}_PG_${PG_GIT_BRANCH}_R_${R_OLD_VERSION}.tar.gz
   echo ${ZIP}
@@ -270,8 +281,8 @@ package() {
   # clean up
   #
   rm -r ${ZIPTMP}
-  rm    ${PGINSTALL}/lib/postgresql/plr*.*
-  rm    ${PGINSTALL}/share/postgresql/extension/plr*.*
+  rm    ${PGINSTALL}/lib${DIRPOSTGRESQL}/plr*.*
+  rm    ${PGINSTALL}/share${DIRPOSTGRESQL}/extension/plr*.*
   #
   loginfo "END   PKGBUILD package SAVE OLD PLR"
   pwd
@@ -293,8 +304,17 @@ package() {
   export R_HOME=${R_HOME_ORIG}
   loginfo "END  PKGBUILD package CUR R PLR BUILD AND INSTALL"
   pwd
-  ls -alrt ${PGINSTALL}/lib/postgresql/plr*.*
-  ls -alrt ${PGINSTALL}/share/postgresql/extension/plr*.*
+  #
+  # some weirdness (something env specific)
+  if [ ! -d "${PGINSTALL}/share/postgresql" ]
+  then
+    local DIRPOSTGRESQL=""
+  else
+    local DIRPOSTGRESQL="/postgresql"
+  fi
+  #
+  ls -alrt ${PGINSTALL}/lib${DIRPOSTGRESQL}/plr*.*
+  ls -alrt ${PGINSTALL}/share${DIRPOSTGRESQL}/extension/plr*.*
 
 
 
@@ -302,12 +322,12 @@ package() {
   #
   # save CUR R PLR in a zip
   #
-  mkdir -p                                                ${ZIPTMP}
-  cp       ${PLRSOURCE}/LICENSE                           ${ZIPTMP}/PLR_LICENSE
-  mkdir -p                                                ${ZIPTMP}/lib
-  cp -r    ${PGINSTALL}/lib/postgresql/plr*.*             ${ZIPTMP}/lib
-  mkdir -p                                                ${ZIPTMP}/share
-  cp -r    ${PGINSTALL}/share/postgresql/extension/plr*.* ${ZIPTMP}/share
+  mkdir -p                                                     ${ZIPTMP}
+  cp    -p ${PLRSOURCE}/LICENSE                                ${ZIPTMP}/PLR_LICENSE
+  mkdir -p                                                     ${ZIPTMP}/lib
+  cp -r -p ${PGINSTALL}/lib${DIRPOSTGRESQL}/plr*.*             ${ZIPTMP}/lib
+  mkdir -p                                                     ${ZIPTMP}/share
+  cp -r -p ${PGINSTALL}/share${DIRPOSTGRESQL}/extension/plr*.* ${ZIPTMP}/share
   #
   export ZIP=PLR_${PLR_TAG}_${MSYSTEM}_PG_${PG_GIT_BRANCH}_R_${R_OLD_VERSION}.tar.gz
   echo ${ZIP}
@@ -320,8 +340,8 @@ package() {
   # clean up
   #
   rm -r ${ZIPTMP}
-  rm    ${PGINSTALL}/lib/postgresql/plr*.*
-  rm    ${PGINSTALL}/share/postgresql/extension/plr*.*
+  rm    ${PGINSTALL}/lib${DIRPOSTGRESQL}/plr*.*
+  rm    ${PGINSTALL}/share${DIRPOSTGRESQL}/extension/plr*.*
   #
   loginfo "END   PKGBUILD package SAVE CUR PLR"
   pwd
