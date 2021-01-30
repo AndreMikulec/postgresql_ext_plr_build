@@ -2,7 +2,7 @@
 
 # What is This?
 
-The Appveyor YAML of this respository, is composed of instructions needed to build, on Windows, using MSYS2 (instead of Microsoft Visual Studio), the PostgreSQL contributed extension "plr" (Programming Language "R").
+The Appveyor YAML of this respository, is composed of instructions needed to build, on Windows, using MSYS2 (instead of Microsoft Visual Studio), the PostgreSQL contributed extension "plr" (PL/R - PostgreSQL support for R as a procedural language (PL)).
 This extension allows a developer to write code using the "R" programming language inside the PostgreSQL database on Windows.
 
 Get the "Appveyor built" downloads here.
