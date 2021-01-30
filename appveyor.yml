@@ -101,15 +101,6 @@ install:
   - appveyor downloadfile https://cran.r-project.org/bin/windows/base/old/%R_OLD_VERSION%/R-%R_OLD_VERSION%-win.exe
   - appveyor downloadfile https://cran.r-project.org/bin/windows/base/old/%R_CUR_VERSION%/R-%R_CUR_VERSION%-win.exe
 
-  # MSYS2 updates
-  # SEE mypaint
-  # https://github.com/mypaint/mypaint/blob/4141a6414b77dcf3e3e62961f99b91d466c6fb52/.appveyor.yml
-  #
-  - echo BEGIN MSYS2 UPGRADE
-  - pacman --noconfirm -Syuu
-  - pacman --noconfirm -Suu
-  - echo END   MSYS2 UPGRADE
-
   # Andre Mikulec experiments and
   # https://github.com/postgres-plr/plpostgres-plr/plr/appveyor.yml
   #
@@ -127,6 +118,27 @@ install:
   # place CUR R on disk
   #
   - R-%R_CUR_VERSION%-win.exe /SP- /VERYSILENT /DIR=%R_HOME%CUR /COMPONENTS=main%COMPONENTS_ARCH%,translations /NOICONS /TASKS=
+
+  # better perl
+  # avoid the PostgreSQL compilation error involving "generate-lwlocknames.pl"
+  # becuase the MSYS2 Perl implemention of regular expressions is poor
+  #
+  - appveyor downloadfile %BETTERPERLURL% -FileName strawberry.zip
+  - 7z x strawberry.zip -o%APPVEYOR_BUILD_FOLDER%\strawberry
+  # better perl in front of the path
+  - set PATH=%APPVEYOR_BUILD_FOLDER%\strawberry\perl\bin;%PATH%
+  # the "github" postgres needs "pexports" (The downloadable source does not need "pexports")
+  - set PATH=%PATH%;%APPVEYOR_BUILD_FOLDER%\strawberry\c\bin
+
+  # MSYS2 updates
+  # SEE mypaint
+  # https://github.com/mypaint/mypaint/blob/4141a6414b77dcf3e3e62961f99b91d466c6fb52/.appveyor.yml
+  #
+  - echo BEGIN MSYS2 UPGRADE
+  - pacman --noconfirm -Syuu
+  - pacman --noconfirm -Suu
+  - echo END   MSYS2 UPGRADE
+
 
   - echo END   APPVEYOR INSTALL
   
