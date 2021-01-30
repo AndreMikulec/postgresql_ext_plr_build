@@ -23,7 +23,6 @@ clone_depth: 1
 
 environment:
   PGSOURCE:  $(APPVEYOR_BUILD_FOLDER)\postgres
-  PLR_VERSION: 8.4.1
   PLRSOURCE:  $(APPVEYOR_BUILD_FOLDER)\plr
   PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\PLRMAKEFILESOURCE\plr
   PGBUILD: $(APPVEYOR_BUILD_FOLDER)\PGBUILD
@@ -183,7 +182,7 @@ build_script:
   - xcopy /E /V /F %PGINSTALL%\lib\postgresql\plr*.*              %ZIPTMP%\lib
   - mkdir                                                         %ZIPTMP%\share
   - xcopy /E /V /F %PGINSTALL%share\postgresql\extension\plr*.*   %ZIPTMP%\share
-  - set ZIP=%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_VERSION%.zip
+  - set ZIP=%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.zip
   - 7z a %ZIP% %ZIPTMP%\*
   #
   # clean up
@@ -215,7 +214,7 @@ build_script:
   - xcopy /E /V /F %PGINSTALL%\lib\postgresql\plr*.*              %ZIPTMP%\lib
   - mkdir                                                         %ZIPTMP%\share
   - xcopy /E /V /F %PGINSTALL%share\postgresql\extension\plr*.*   %ZIPTMP%\share
-  - set ZIP=%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_VERSION%.zip
+  - set ZIP=%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%.zip
   - 7z a %ZIP% %ZIPTMP%\*
   #
   # clean up
@@ -232,13 +231,13 @@ build_script:
   - echo END   APPVEYOR BUILD_SCRIPT
 
 artifacts:
-  - path: "%APPVEYOR_BUILD_FOLDER%\\%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_VERSION%.zip"
-    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_VERSION%.zip"
-  - path: "%APPVEYOR_BUILD_FOLDER%\\%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_VERSION%.zip"
-    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_VERSION%.zip"
+  - path: "%APPVEYOR_BUILD_FOLDER%\\%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.zip"
+    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.zip"
+  - path: "%APPVEYOR_BUILD_FOLDER%\\%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%.zip"
+    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%.zip"
 
 deploy:
-  release: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_PLR_%PLR_VERSION%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%"
+  release: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_PLR_%PLR_TAG%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%"
   provider: GitHub
   auth_token:
     secure: KzS1DumC2yBg2LGN9x3AemHFOjAdp+rD58rW5aGGpwW4Pfdwdm7AmRpYKprPY8Gs
