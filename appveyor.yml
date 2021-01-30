@@ -1,5 +1,52 @@
 
 
+
+# help: 1 of 3
+# From:	Andrew Dunstan <andrew(at)dunslane(dot)net>
+# To:	PostgreSQL-development <pgsql-hackers(at)postgresql(dot)org>
+# Subject:	msys2
+# Date:	2018-10-07 19:32:44
+# Message-ID:	9f4f22be-f9f1-b350-bc06-521226b87f7a@dunslane.net
+# Views:	Raw Message | Whole Thread | Download mbox | Resend email
+# Thread:
+# 2018-10-07 19:32:44 from Andrew Dunstan <andrew(at)dunslane(dot)net>
+# Lists:	pgsql-hackers
+# https://www.postgresql.org/message-id/9f4f22be-f9f1-b350-bc06-521226b87f7a%40dunslane.net
+
+
+# help: 2 of 3
+# Developing PostgreSQL for Windows, Part 3
+# March 24, 2020/in Eisentraut's PlanetPostgreSQL, PostgreSQL /by Peter Eisentraut
+# https://www.2ndquadrant.com/en/blog/developing-postgresql-windows-part-3/
+# . . .
+# some AppVeyor files
+# From:	Peter Eisentraut <peter(dot)eisentraut(at)2ndquadrant(dot)com>
+# To:	pgsql-hackers <pgsql-hackers(at)postgresql(dot)org>
+# Subject:	some AppVeyor files
+# Date:	2020-03-23 16:05:33
+# Message-ID:	d8e78714-dc77-4a64-783f-e863ba4d951f@2ndquadrant.com
+# Views:	Raw Message | Whole Thread | Download mbox | Resend email
+# Thread:
+# 2020-03-23 16:05:33 from Peter Eisentraut <peter(dot)eisentraut(at)2ndquadrant(dot)com>
+# Lists:	pgsql-hackers
+# https://www.postgresql.org/message-id/d8e78714-dc77-4a64-783f-e863ba4d951f%402ndquadrant.com
+# . . .
+# From a04c2140482645a810bfd682b204bac5194eea8d Mon Sep 17 00:00:00 2001
+# From: Peter Eisentraut <peter@eisentraut.org>
+# Date: Tue, 10 Mar 2020 19:23:46 +0100
+# Subject: [PATCH] AppVeyor configuration for MinGW
+# https://www.postgresql.org/message-id/attachment/109033/0001-AppVeyor-configuration-for-MinGW.patch
+
+
+# help: 3 of 3
+# Package: mingw-w64-x86_64-postgresql
+# Libraries for use with PostgreSQL (mingw-w64)
+# https://github.com/msys2/MINGW-packages/blob/master/mingw-w64-postgresql/PKGBUILD
+# and
+# https://packages.msys2.org/package/mingw-w64-x86_64-postgresql
+
+
+
 version: 0.1.0-{build}-{branch}
 
 # Do not build on tags (GitHub and BitBucket)
@@ -23,8 +70,11 @@ image: Visual Studio 2019
 clone_depth: 1
 
 environment:
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
   BETTERPERL32URL: https://strawberryperl.com/download/5.32.1.1/strawberry-perl-5.32.1.1-32bit-portable.zip
+  BETTERPERL32: strawberry32
   BETTERPERL64URL: https://strawberryperl.com/download/5.32.1.1/strawberry-perl-5.32.1.1-64bit-portable.zip
+  BETTERPERL64: strawberry64
   PGSOURCE:  $(APPVEYOR_BUILD_FOLDER)\postgres
   PLRSOURCE:  $(APPVEYOR_BUILD_FOLDER)\plr
   PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\PLRMAKEFILESOURCE\plr
@@ -35,6 +85,7 @@ environment:
   matrix:
     - MSYSTEM: MINGW64
       BETTERPERLURL: $(BETTERPERL64URL)
+      BETTERPERL: $(BETTERPERL64)
       PG_GIT_BRANCH: REL_13_STABLE
       PLR_TAG: REL8_4_1
       R_ARCH: /x64
@@ -46,8 +97,11 @@ environment:
 # JAN 2021
 # https://www.appveyor.com/docs/how-to/rdp-to-build-worker/
 
+
+
 # collect IP and username for a Microsoft Remote Desktop Connection (rdc)
 init:
+  - "@echo off"
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
   # PATH: I am adding to the PATH, to make "pacman" available during the Appveyor "install" stage.
@@ -56,7 +110,17 @@ init:
   #
   - PATH C:\msys64\%MSYSTEM%\bin;C:\msys64\usr\bin;C:\msys64\bin;%PATH%
 
+  # Caching data between builds
+  # https://www.appveyor.com/docs/build-cache/
+  #
+  # - set APPVEYOR_CACHE_SKIP_SAVE=true
+  # By default build cache is being saved only for successsful build.
+  # - set APPVEYOR_SAVE_CACHE_ON_ERROR=true
+  # - set APPVEYOR_CACHE_SKIP_RESTORE=true
+
+
 install:
+  - set HOME=.
 
   - echo BEGIN APPVEYOR INSTALL
 
@@ -91,6 +155,24 @@ install:
   - echo %CD%
   - echo %APPVEYOR_BUILD_FOLDER%
 
+  # needed to acquire source code
+  - pacman -S --noconfirm --needed msys/git
+
+  # needed to (eventually) save cache and artifacts
+  - pacman -S --noconfirm --needed msys/tar
+
+  # MSYS2 updates
+  # SEE mypaint
+  # https://github.com/mypaint/mypaint/blob/4141a6414b77dcf3e3e62961f99b91d466c6fb52/.appveyor.yml
+  #
+  - echo BEGIN MSYS2 UPGRADE
+
+  - pacman --noconfirm -Syuu
+  - pacman --noconfirm -Suu
+
+  - echo END   MSYS2 UPGRADE
+
+  # acquire source code
   - git clone --depth 1 --single-branch --branch=%PG_GIT_BRANCH% https://github.com/postgres/postgres.git %PGSOURCE%
   - git clone --depth 1 --single-branch --branch=%PLR_TAG%       https://github.com/postgres-plr/plr.git  %PLRSOURCE%
   - git clone --depth 1 --single-branch --branch=master          https://github.com/AndreMikulec/postgresql_ext_plr_Makefile.git %PLRMAKEFILESOURCE%
@@ -98,13 +180,19 @@ install:
   # From
   # https://github.com/postgres-plr/plpostgres-plr/plr/appveyor.yml
   #
-  - appveyor downloadfile https://cran.r-project.org/bin/windows/base/old/%R_OLD_VERSION%/R-%R_OLD_VERSION%-win.exe
-  - appveyor downloadfile https://cran.r-project.org/bin/windows/base/old/%R_CUR_VERSION%/R-%R_CUR_VERSION%-win.exe
+  # Curl (curl.exe) has already been added to PATH on build workers.
+  # https://www.appveyor.com/docs/how-to/download-file/
+  #
+  # - appveyor DownloadFile https://cran.r-project.org/bin/windows/base/old/%R_OLD_VERSION%/R-%R_OLD_VERSION%-win.exe
+  # - appveyor DownloadFile https://cran.r-project.org/bin/windows/base/old/%R_CUR_VERSION%/R-%R_CUR_VERSION%-win.exe
+  #
+  - if not exist R-%R_OLD_VERSION%-win.exe curl https://cran.r-project.org/bin/windows/base/old/%R_OLD_VERSION%/R-%R_OLD_VERSION%-win.exe -o R-%R_OLD_VERSION%-win.exe
+  - if not exist R-%R_CUR_VERSION%-win.exe curl https://cran.r-project.org/bin/windows/base/old/%R_CUR_VERSION%/R-%R_CUR_VERSION%-win.exe -o R-%R_CUR_VERSION%-win.exe
 
   # Andre Mikulec experiments and
   # https://github.com/postgres-plr/plpostgres-plr/plr/appveyor.yml
   #
-  # NOTE, this is an attempt to do a single architecture install.
+  # NOTE, this is an attempt to do a "R single architecture" install.
   # HOWEVER, NOW, this is always an "R subarchitecture" install.  When did that change?
   #
   # Note: Rscript --vanilla --quiet -e shell('set') | findstr /R "^R_ARCH"
@@ -119,40 +207,113 @@ install:
   #
   - R-%R_CUR_VERSION%-win.exe /SP- /VERYSILENT /DIR=%R_HOME%CUR /COMPONENTS=main%COMPONENTS_ARCH%,translations /NOICONS /TASKS=
 
-  # better perl
-  # avoid the PostgreSQL compilation error involving "generate-lwlocknames.pl"
-  # becuase the MSYS2 Perl implemention of regular expressions is poor
+  - echo BEGIN BETTER PERL
+  # better Perl
+  # avoid the PostgreSQL compilation error "unable to parse lwlocknames.txt"
+  # because the MSYS2 Perl implemention of regular expressions is poor.
   #
-  - appveyor downloadfile %BETTERPERLURL% -FileName strawberry.zip
-  - 7z x strawberry.zip -o%APPVEYOR_BUILD_FOLDER%\strawberry
-  # better perl in front of the path
-  - set PATH=%APPVEYOR_BUILD_FOLDER%\strawberry\perl\bin;%PATH%
-  # the "github" postgres needs "pexports" (The downloadable source does not need "pexports")
-  - set PATH=%PATH%;%APPVEYOR_BUILD_FOLDER%\strawberry\c\bin
-
-  # MSYS2 updates
-  # SEE mypaint
-  # https://github.com/mypaint/mypaint/blob/4141a6414b77dcf3e3e62961f99b91d466c6fb52/.appveyor.yml
+  # - appveyor DownloadFile %BETTERPERLURL% -FileName %BETTERPERL%.zip
   #
-  - echo BEGIN MSYS2 UPGRADE
-  - pacman --noconfirm -Syuu
-  - pacman --noconfirm -Suu
-  - echo END   MSYS2 UPGRADE
+  - if not exist %BETTERPERL%.zip curl %BETTERPERLURL% -o %BETTERPERL%.zip
+  #
+  - 7z x %BETTERPERL%.zip -o%APPVEYOR_BUILD_FOLDER%\%BETTERPERL%
 
+  #
+  # put the better perl in front of the path
+  #
+  - set PATH=%APPVEYOR_BUILD_FOLDER%\%BETTERPERL%\perl\bin;%PATH%
+  # - set PATH=C:\Strawberry\perl\bin;%PATH%
+
+  # postgres build from git(github) needs "pexports"
+  #
+  # (the downloadable non-git postgresql source code does not need "pexports")
+  #
+  - set PATH=%PATH%;%APPVEYOR_BUILD_FOLDER%\%BETTERPERL%\c\bin
+  # - set PATH=%PATH%;C:\Strawberry\c\bin
+
+  - echo END   BETTER PERL
+  - set
+  - sh -l -c "export"
+  - sh -l -c "which perl"
+  - sh -l -c "which pexports"
 
   - echo END   APPVEYOR INSTALL
-  
+
+
+
 build_script:
+  - set HOME=.
+
+  - echo BEGIN APPVEYOR BUILD SCRIPT
+
   - bash --login -c "$(cygpath ${APPVEYOR_BUILD_FOLDER})/full-build.sh"
-  
+
+  - echo END   APPVEYOR BUILD SCRIPT
+
+
+
 artifacts:
-  - path: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.tar.gz"
-    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%"
-  - path: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%.tar.gz"
-    name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%"
+  - path: 'PLR_*.tar.gz'
+
+
+
+# note, this does not, and can not, distiguish between a file and a folder
+# Caching data between builds
+# https://www.appveyor.com/docs/build-cache/
+#
+# How to check if a file exists from inside a batch file [duplicate]
+# https://stackoverflow.com/questions/4340350/how-to-check-if-a-file-exists-from-inside-a-batch-file
+#
+# How to verify if a file exists in a batch file?
+# https://stackoverflow.com/questions/3022176/how-to-verify-if-a-file-exists-in-a-batch-file
+#
+# “if not exist” command in batch file
+# https://stackoverflow.com/questions/23735282/if-not-exist-command-in-batch-file
+#
+cache:
+  #
+  # 1 GB limit per "free" account
+  #
+  # note: I may have set (so still saves even on error)
+  # environment:
+  #   APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  #
+  # note:
+  # -> nothing (no "by changed file", therefore no invalidation criteria)
+  #
+  # manually delete an [account] project cache
+  # https://www.appveyor.com/docs/build-cache/
+  # https://www.appveyor.com/docs/api/#authentication
+  # https://ci.appveyor.com/api-keys
+  #
+  # export APPVEYOR_TOKEN="Get from MY page: https://ci.appveyor.com/api-keys"
+  # curl -X "DELETE" -H "Authorization: Bearer $APPVEYOR_TOKEN" https://ci.appveyor.com/project/AndreMikulec/postgresql_ext_plr_build/buildcache
+  #
+  #  85 MB not compressed (3.6.3)
+  - 'R-%R_OLD_VERSION%-win.exe'
+
+  #  85 MB not compressed (4.0.3)
+  - 'R-%R_CUR_VERSION%-win.exe'
+
+  # 153 MB not compressed
+  #   DOES NOT HAVE A SEPARATE 32 and 64 implementation
+  #   Strawberry Perl is ONLY on the image (as of JAN 2021): Visual Studio 2019
+  #   Strawberry Perl 5.30.2 (C:\Strawberry\perl\bin)
+  #   https://www.appveyor.com/docs/windows-images-software/#perl
+  #   #
+  #   Strawberry Perl 5.30.2.1 (2020-03-17)
+  #   https://strawberryperl.com/releases.html
+  - '%BETTERPERL%.zip'
+
+  #
+  # note, in that branch(or tag), this is not the "latest", but this "good enough"
+  #   2 MB not compressed
+  - 'PG_%PG_GIT_BRANCH%.configure.tar.gz'
+  # 200 MB not compressed
+  - 'PG_%PG_GIT_BRANCH%.build.tar.gz'
 
 deploy:
-  release: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_PLR_%PLR_TAG%"
+  release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%"
   provider: GitHub
   auth_token:
     secure: KzS1DumC2yBg2LGN9x3AemHFOjAdp+rD58rW5aGGpwW4Pfdwdm7AmRpYKprPY8Gs
@@ -160,6 +321,8 @@ deploy:
   prerelease: false
   on:
     branch: master
+
+
 
 # on_finish:
 #   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

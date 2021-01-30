@@ -1,18 +1,21 @@
+
+set -v -x
+
 # Maintainer: Andre Mikulec <Andre_Mikulec@Hotmail.com>
 _realname=postgres-plr
 pkgbase=${_realname}
 pkgname="${_realname}"
-pkgver=1.0.0
+pkgver=8.4.1
 pkgrel=1
 pkgdesc="PL/R - PostgreSQL support for R as a procedural language (PL)"
 arch=('any')
+
+depends=("tar")
 makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
-             "curl"
-             "perl"
-             "git"
              "flex"
              "bison"
-             "make")
+             "make"
+             "perl")
 
 license=("GPL")
 
@@ -24,55 +27,131 @@ export PGINSTALL=$(cygpath -u "${PGINSTALL}")
 export R_HOME=$(cygpath -u "${R_HOME}")
 export ZIPTMP=$(cygpath -u "${ZIPTMP}")
 
+export
+
+
+#
+# mypaint/windows/msys2-build.sh
+# https://github.com/mypaint/mypaint/blob/4141a6414b77dcf3e3e62961f99b91d466c6fb52/windows/msys2-build.sh
+#
+# also functions: loginfo() logok() logerror()
+#
+# ANSI control codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+
+
 package() {
 
-  msg2 "BEGIN APPVEYOR BUILD_SCRIPT"
+  loginfo "BEGIN PKGBUILD package"
 
-  # prepare to build postgres
+
+
+  pwd
+  echo ${srcdir}
+  echo ${pkgdir}
+  export
+  local R_HOME_ORIG
+
+
+
+  # 18 Tar Command Examples in Linux
+  # 2020
+  # https://www.tecmint.com/18-tar-command-examples-in-linux/
+
+
+
+  loginfo "BEGIN PKGBUILD package POSTGRESQL CONFIGURE"
+  #
+  # prepare to configure postgres
   #
   mkdir ${PGBUILD}
-
-  # build postgres
   #
-  msg2 "BEGIN POSTGRESQL BUILD"
+  # configure postgres
+  #
   cd ${PGBUILD}
-  ${PGSOURCE}/configure --prefix=${PGINSTALL}
+  if [ ! -f "${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz" ]
+  then
+    ${PGSOURCE}/configure --enable-depend --disable-rpath --prefix=${PGINSTALL}
+    tar -zcvf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz *
+  else
+    tar -zxvf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz
+  fi
   cd -
-  msg2 "END   POSTGRESQL BUILD"
+  loginfo "END   PKGBUILD package POSTGRESQL CONFIGURE"
+  pwd
 
+
+
+  loginfo "BEGIN PKGBUILD package PGBUILD to PGSOURCE links follow"
+  #
   # Links from the "build environment" back to the "source environment".
   # Links "abs_top_builddir" back to the "abs_top_srcdir" directory.
   #
-  msg2 "PGBUILD to PGSOURCE links follow"
   cat  "${PGBUILD}/src/Makefile.global" | grep '^abs'
   cat  "${PGBUILD}/src/Makefile.global" | grep '^CPPFLAGS'
   #
   # If these are wrong then re-run configure !!!
   # If these are wrong then re-run configure !!!
   # If these are wrong then re-run configure !!!
+  #
+  loginfo "END   PKGBUILD package PGBUILD to PGSOURCE links follow"
 
+
+
+  loginfo "BEGIN PKGBUILD package POSTGRESQL BUILD"
+  #
+  # postgres build
+  #
+  cd ${PGBUILD}
+  if [ ! -f "${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz" ]
+  then
+    make
+    tar -zcvf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz *
+  else
+    tar -zxvf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz
+  fi
+
+  cd -
+  loginfo "END   PKGBUILD package POSTGRESQL BUILD"
+  pwd
+
+
+
+  loginfo "BEGIN PKGBUILD package PLR FILES SETUP"
+  #
+  # Note: This MSYS2 (eventual) build of OLD/CUR R PLR
+  #       uses the Makefile that uses R_HOME and R_ARCH.
+  #
   # copy the PLR code and the correct Makefile to PGSOURCE
   #
-  msg2 "BEGIN PLR FILES SETUP"
-  mkdir -p                                      ${PGSOURCE}/contrib/plr    
+  mkdir -p                                      ${PGSOURCE}/contrib/plr
   cp -r    ${PLRSOURCE}/*                       ${PGSOURCE}/contrib/plr
   rm                                            ${PGSOURCE}/contrib/plr/Makefile
   cp       ${PLRMAKEFILESOURCE}/Makefile        ${PGSOURCE}/contrib/plr
-
+  #
   # copy the correct Makefile to PGBUILD
   #
   mkdir -p                                      ${PGBUILD}/contrib/plr
   cp       ${PLRMAKEFILESOURCE}/Makefile        ${PGBUILD}/contrib/plr
   mkdir -p                                      ${PGBUILD}/contrib/plr/sql
   mkdir -p                                      ${PGBUILD}/contrib/plr/expected
-  msg2 "echo END  PLR FILES SETUP"
-
-  # note: build OLD/CUR R PLR uses the Makefile that uses R_HOME and R_ARCH
-
-  # build OLD R PLR
   #
+  loginfo "echo END  PKGBUILD package PLR FILES SETUP"
+  ls -alrt ${PLRSOURCE}/LICENSE
+  ls -alrt ${PGSOURCE}/contrib/plr
+  cat      ${PGSOURCE}/contrib/plr/Makefile
+  cat       ${PGBUILD}/contrib/plr/Makefile
 
-  msg2 "BEGIN OLD R PLR BUILD"
+
+
+  loginfo "BEGIN PKGBUILD package OLD R PLR BUILD AND INSTALL"
+  #
+  # build and install OLD R PLR
+  #
   export R_HOME_ORIG=${R_HOME}
   export R_HOME=${R_HOME}OLD
   cd ${PGBUILD}/contrib/plr
@@ -81,34 +160,46 @@ package() {
   make clean
   cd -
   export R_HOME=${R_HOME_ORIG}
-  msg2 "END  OLD R PLR BUILD"
+  loginfo "END  PKGBUILD package OLD R PLR BUILD AND INSTALL"
+  pwd
+  ls -alrt ${PGINSTALL}/lib/postgresql/plr*.*
+  ls -alrt ${PGINSTALL}/share/postgresql/extension/plr*.*
 
 
+
+  loginfo "BEGIN PKGBUILD package SAVE OLD PLR"
+  #
   # save OLD R PLR in a zip
   #
-  msg2 "BEGIN SAVE OLD PLR"
   mkdir -p                                                ${ZIPTMP}
   cp       ${PLRSOURCE}/LICENSE                           ${ZIPTMP}/PLR_LICENSE
   mkdir -p                                                ${ZIPTMP}/lib
   cp -r    ${PGINSTALL}/lib/postgresql/plr*.*             ${ZIPTMP}/lib
   mkdir -p                                                ${ZIPTMP}/share
   cp -r    ${PGINSTALL}/share/postgresql/extension/plr*.* ${ZIPTMP}/share
-  export ZIP=${MSYSTEM}_PG_${PG_GIT_BRANCH}_R_${R_OLD_VERSION}_PLR_${PLR_TAG}.tar.gz
+  #
+  export ZIP=PLR_${PLR_TAG}_${MSYSTEM}_PG_${PG_GIT_BRANCH}_R_${R_OLD_VERSION}.tar.gz
+  echo ${ZIP}
   cd ${ZIPTMP}
   tar -zcvf ${APPVEYOR_BUILD_FOLDER}/${ZIP} *
   cd -
-  msg2 "END   SAVE OLD PLR"
   #
   # clean up
   #
   rm -r ${ZIPTMP}
-  rm -r ${PGINSTALL}/lib/postgresql/plr*.*
-  rm -r ${PGINSTALL}/share/postgresql/extension/plr*.*
-  msg2 "echo END   SAVE OLD PLR"
-
-  # build CUR R PLR
+  rm    ${PGINSTALL}/lib/postgresql/plr*.*
+  rm    ${PGINSTALL}/share/postgresql/extension/plr*.*
   #
-  msg2 "BEGIN CUR R PLR BUILD"
+  loginfo "END   PKGBUILD package SAVE OLD PLR"
+  pwd
+  ls -alrt ${APPVEYOR_BUILD_FOLDER}/${ZIP}
+
+
+
+  loginfo "BEGIN PKGBUILD package CUR R PLR BUILD AND INSTALL"
+  #
+  # build and install CUR R PLR
+  #
   export R_HOME_ORIG=${R_HOME}
   export R_HOME=${R_HOME}CUR
   cd ${PGBUILD}/contrib/plr
@@ -117,28 +208,75 @@ package() {
   make clean
   cd -
   export R_HOME=${R_HOME_ORIG}
-  msg2 "END  CUR R PLR BUILD"
+  loginfo "END  PKGBUILD package CUR R PLR BUILD AND INSTALL"
+  pwd
+  ls -alrt ${PGINSTALL}/lib/postgresql/plr*.*
+  ls -alrt ${PGINSTALL}/share/postgresql/extension/plr*.*
 
+
+
+  loginfo "BEGIN PKGBUILD package SAVE CUR PLR"
+  #
   # save CUR R PLR in a zip
   #
-  msg2 "BEGIN SAVE CUR PLR"
   mkdir -p                                                ${ZIPTMP}
   cp       ${PLRSOURCE}/LICENSE                           ${ZIPTMP}/PLR_LICENSE
   mkdir -p                                                ${ZIPTMP}/lib
   cp -r    ${PGINSTALL}/lib/postgresql/plr*.*             ${ZIPTMP}/lib
   mkdir -p                                                ${ZIPTMP}/share
   cp -r    ${PGINSTALL}/share/postgresql/extension/plr*.* ${ZIPTMP}/share
-  export ZIP=${MSYSTEM}_PG_${PG_GIT_BRANCH}_R_${R_CUR_VERSION}_PLR_${PLR_TAG}.tar.gz
+  #
+  export ZIP=PLR_${PLR_TAG}_${MSYSTEM}_PG_${PG_GIT_BRANCH}_R_${R_OLD_VERSION}.tar.gz
+  echo ${ZIP}
   cd ${ZIPTMP}
   tar -zcvf ${APPVEYOR_BUILD_FOLDER}/${ZIP} *
   cd -
-  msg2 "END   SAVE CUR PLR"
   #
   # clean up
   #
   rm -r ${ZIPTMP}
-  rm -r ${PGINSTALL}/lib/postgresql/plr*.*
-  rm -r ${PGINSTALL}/share/postgresql/extension/plr*.*
-  msg2 "echo END   SAVE CUR PLR"
+  rm    ${PGINSTALL}/lib/postgresql/plr*.*
+  rm    ${PGINSTALL}/share/postgresql/extension/plr*.*
+  #
+  loginfo "END   PKGBUILD package SAVE CUR PLR"
+  pwd
+  ls -alrt ${APPVEYOR_BUILD_FOLDER}/${ZIP}
+
+
+
+  loginfo "END   PKGBUILD package"
 
 }
+
+
+
+
+loginfo() {
+  set +v +x
+  echo -ne "${CYAN}"
+  echo -n "$@"
+  echo -e "${NC}"
+  set -v -x
+}
+
+
+logok() {
+  set +v +x
+  echo -ne "${GREEN}"
+  echo -n "$@"
+  echo -e "${NC}"
+  set -v -x
+}
+
+
+logerr() {
+  set +v +x
+  echo -ne "${RED}ERROR: "
+  echo -n "$@"
+  echo -e "${NC}"
+  set -v -x
+}
+
+
+
+set +v +x
