@@ -2,6 +2,19 @@
 
 set -v -x
 
+
+
+loginfo() {
+  set +v +x
+  echo -ne "${CYAN}"
+  echo -n "$@"
+  echo -e "${NC}"
+  set -v -x
+}
+
+
+
+
 loginfo "BEGIN file full-build.sh"
 
 
@@ -37,15 +50,6 @@ set -o pipefail
 MINGW_INSTALLS="mingw64" makepkg-mingw --nocheck 2>&1 | tee PKGBUILD.log
 #
 loginfo "END   makepkg-mingw"
-
-
-loginfo() {
-  set +v +x
-  echo -ne "${CYAN}"
-  echo -n "$@"
-  echo -e "${NC}"
-  set -v -x
-}
 
 
 

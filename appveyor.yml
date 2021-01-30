@@ -75,6 +75,9 @@ environment:
   BETTERPERL32: strawberry32
   BETTERPERL64URL: https://strawberryperl.com/download/5.32.1.1/strawberry-perl-5.32.1.1-64bit-portable.zip
   BETTERPERL64: strawberry64
+  # note, directories are RSVP by PKGBUILD
+  # PKGBUILD _realname=postgres-plr
+  # directories "src" and "pkg/postgres-plr"
   PGSOURCE:  $(APPVEYOR_BUILD_FOLDER)\postgres
   PLRSOURCE:  $(APPVEYOR_BUILD_FOLDER)\plr
   PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\PLRMAKEFILESOURCE\plr

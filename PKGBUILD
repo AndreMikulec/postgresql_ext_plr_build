@@ -1,6 +1,36 @@
 
 set -v -x
 
+
+
+loginfo() {
+  set +v +x
+  echo -ne "${CYAN}"
+  echo -n "$@"
+  echo -e "${NC}"
+  set -v -x
+}
+
+
+logok() {
+  set +v +x
+  echo -ne "${GREEN}"
+  echo -n "$@"
+  echo -e "${NC}"
+  set -v -x
+}
+
+
+logerr() {
+  set +v +x
+  echo -ne "${RED}ERROR: "
+  echo -n "$@"
+  echo -e "${NC}"
+  set -v -x
+}
+
+
+
 loginfo "BEGIN file PKGBUILD"
 
 
@@ -83,10 +113,15 @@ package() {
   loginfo "BEGIN PKGBUILD package"
 
 
-
+  loginfo 'PKGBUILD package pwd'
   pwd
+  loginfo 'PKGBUILD package ${srcdir}'
   echo ${srcdir}
+  loginfo 'PKGBUILD package ${pkgdir}'
   echo ${pkgdir}
+
+
+
   export
   local R_HOME_ORIG
 
@@ -115,7 +150,6 @@ package() {
     tar -zcf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz *
     ls -alrt ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz
     loginfo "END   tar CREATION"
-    lo
   else
     loginfo "BEGIN tar EXTRACTION"
     tar -zxf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz
@@ -297,35 +331,6 @@ package() {
 
   loginfo "END   PKGBUILD package"
 
-}
-
-
-
-
-loginfo() {
-  set +v +x
-  echo -ne "${CYAN}"
-  echo -n "$@"
-  echo -e "${NC}"
-  set -v -x
-}
-
-
-logok() {
-  set +v +x
-  echo -ne "${GREEN}"
-  echo -n "$@"
-  echo -e "${NC}"
-  set -v -x
-}
-
-
-logerr() {
-  set +v +x
-  echo -ne "${RED}ERROR: "
-  echo -n "$@"
-  echo -e "${NC}"
-  set -v -x
 }
 
 
