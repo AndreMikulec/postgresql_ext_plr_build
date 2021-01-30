@@ -1,4 +1,5 @@
 
+
 version: 0.1.0-{build}-{branch}
 
 # Do not build on tags (GitHub and BitBucket)
@@ -32,10 +33,9 @@ environment:
   matrix:
     - MSYSTEM: MINGW64
       PG_GIT_BRANCH: REL_13_STABLE
-      R_ARCH: \x64
-      R_ARCH_NIX: /x64
-      COMPONENTS_ARCH: ',x64'
       PLR_TAG: REL8_4_1
+      R_ARCH: /x64
+      COMPONENTS_ARCH: ',x64'
       R_OLD_VERSION: 3.6.3
       R_CUR_VERSION: 4.0.3
 
@@ -107,50 +107,6 @@ install:
   - pacman --noconfirm -Suu
   - echo END   MSYS2 UPGRADE
 
-  - echo END   APPVEYOR INSTALL
-
-build_script:
-
-  - echo BEGIN APPVEYOR BUILD_SCRIPT
-
-  # prepare to build postgres
-  #
-  - sh -l -c "mkdir ${PGBUILD}"
-
-  # build postgres
-  #
-  - echo BEGIN POSTGRESQL BUILD
-  - sh -l -c "cd ${PGBUILD} && ${PGSOURCE}/configure --prefix=${PGINSTALL}"
-  - echo END   POSTGRESQL BUILD
-
-  # Links from the "build environment" back to the "source environment".
-  # Links "abs_top_builddir" back to the "abs_top_srcdir" directory.
-  #
-  - echo PGBUILD to PGSOURCE links follow
-  # can not get to work in the Appveyor environment, so skipping
-  # cat $PGBUILD/src/Makefile.global | grep '^abs'
-  # cat $PGBUILD/src/Makefile.global | grep '^CPPFLAGS'
-  #
-  # If these are wrong then re-run configure !!!
-  # If these are wrong then re-run configure !!!
-  # If these are wrong then re-run configure !!!
-
-  # copy the PLR code and the correct Makefile to PGSOURCE
-  #
-  - echo BEGIN PLR FILES SETUP
-  - mkdir                                       %PGSOURCE%\contrib\plr    
-  - xcopy /E /V /F %PLRSOURCE%\*                %PGSOURCE%\contrib\plr
-  - del                                         %PGSOURCE%\contrib\plr\Makefile
-  - xcopy    /V /F %PLRMAKEFILESOURCE%\Makefile %PGSOURCE%\contrib\plr
-
-  # copy the correct Makefile to PGBUILD
-  #
-  - mkdir                                       %PGBUILD%\contrib\plr
-  - xcopy    /V /F %PLRMAKEFILESOURCE%\Makefile %PGBUILD%\contrib\plr
-  - mkdir                                       %PGBUILD%\contrib\plr\sql
-  - mkdir                                       %PGBUILD%\contrib\plr\expected
-  - echo END  PLR FILES SETUP
-
   # Andre Mikulec experiments and
   # https://github.com/postgres-plr/plpostgres-plr/plr/appveyor.yml
   #
@@ -163,81 +119,25 @@ build_script:
   #
   # place OLD R on disk
   #
-  - R-%R_OLD_VERSION%-win.exe /SP- /VERYSILENT /DIR=%R_HOME% /COMPONENTS=main%COMPONENTS_ARCH%,translations /NOICONS /TASKS=
+  - R-%R_OLD_VERSION%-win.exe /SP- /VERYSILENT /DIR=%R_HOME%OLD /COMPONENTS=main%COMPONENTS_ARCH%,translations /NOICONS /TASKS=
+  #
+  # place CUR R on disk
+  #
+  - R-%R_CUR_VERSION%-win.exe /SP- /VERYSILENT /DIR=%R_HOME%CUR /COMPONENTS=main%COMPONENTS_ARCH%,translations /NOICONS /TASKS=
 
-  # build OLD R PLR
-  #
-  - echo BEGIN OLD R PLR BUILD
-  - sh -l -c "export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;cd ${PGBUILD}/contrib/plr && make"
-  - sh -l -c "export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;cd ${PGBUILD}/contrib/plr && make install"
-  - sh -l -c "export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;cd ${PGBUILD}/contrib/plr && make clean"
-  - echo END  OLD R PLR BUILD "
-
-  # save OLD R PLR in a zip
-  #
-  - echo BEGIN SAVE OLD PLR
-  - mkdir                                                         %ZIPTMP%
-  - xcopy    /V /F %PLRSOURCE%\LICENSE                            %ZIPTMP%\PLR_LICENSE
-  - mkdir                                                         %ZIPTMP%\lib
-  - xcopy /E /V /F %PGINSTALL%\lib\postgresql\plr*.*              %ZIPTMP%\lib
-  - mkdir                                                         %ZIPTMP%\share
-  - xcopy /E /V /F %PGINSTALL%share\postgresql\extension\plr*.*   %ZIPTMP%\share
-  - set ZIP=%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.zip
-  - 7z a %ZIP% %ZIPTMP%\*
-  #
-  # clean up
-  #
-  - rmdir /S /Q %ZIPTMP%
-  - del /Q %PGINSTALL%\lib\postgresql\plr*.*
-  - del /Q %PGINSTALL%share\postgresql\extension\plr*.*
-  - echo END   SAVE OLD PLR
-
-  # remove and place CUR R on disk
-  #
-  - rmdir /S /Q %R_HOME%
-  - R-%R_CUR_VERSION%-win.exe /SP- /VERYSILENT /DIR=%R_HOME% /COMPONENTS=main%COMPONENTS_ARCH%,translations /NOICONS /TASKS=
-
-  # build CUR R PLR
-  #
-  - echo BEGIN CUR R PLR BUILD
-  - sh -l -c "export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;cd ${PGBUILD}/contrib/plr && make"
-  - sh -l -c "export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;cd ${PGBUILD}/contrib/plr && make install"
-  - sh -l -c "export R_HOME=$(cygpath -u $R_HOME);echo $R_HOME;export R_ARCH=$R_ARCH_NIX;echo $R_ARCH;cd ${PGBUILD}/contrib/plr && make clean"
-  - echo END  CUR R PLR BUILD "
-
-  # save CUR R PLR in zip
-  #
-  - echo BEGIN SAVE CUR PLR
-  - mkdir                                                         %ZIPTMP%
-  - xcopy    /V /F %PLRSOURCE%\LICENSE                            %ZIPTMP%\PLR_LICENSE
-  - mkdir                                                         %ZIPTMP%\lib
-  - xcopy /E /V /F %PGINSTALL%\lib\postgresql\plr*.*              %ZIPTMP%\lib
-  - mkdir                                                         %ZIPTMP%\share
-  - xcopy /E /V /F %PGINSTALL%share\postgresql\extension\plr*.*   %ZIPTMP%\share
-  - set ZIP=%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%.zip
-  - 7z a %ZIP% %ZIPTMP%\*
-  #
-  # clean up
-  #
-  - rmdir /S /Q %ZIPTMP%
-  - del /Q %PGINSTALL%\lib\postgresql\plr*.*
-  - del /Q %PGINSTALL%share\postgresql\extension\plr*.*
-  - echo END   SAVE CUR PLR
-
-  # remove CUR R on disk
-  #
-  - rmdir /S /Q %R_HOME%
-
-  - echo END   APPVEYOR BUILD_SCRIPT
-
+  - echo END   APPVEYOR INSTALL
+  
+build_script:
+  - C:\rtools40\usr\bin\bash --login -c "$(cygpath ${APPVEYOR_BUILD_FOLDER})/full-build.sh"
+  
 artifacts:
-  - path: "%APPVEYOR_BUILD_FOLDER%\\%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.zip"
+  - path: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.zip"
     name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_OLD_VERSION%_PLR_%PLR_TAG%.zip"
-  - path: "%APPVEYOR_BUILD_FOLDER%\\%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%.zip"
+  - path: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%.zip"
     name: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_PLR_%PLR_TAG%.zip"
 
 deploy:
-  release: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_PLR_%PLR_TAG%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%"
+  release: "%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_PLR_%PLR_TAG%"
   provider: GitHub
   auth_token:
     secure: KzS1DumC2yBg2LGN9x3AemHFOjAdp+rD58rW5aGGpwW4Pfdwdm7AmRpYKprPY8Gs
