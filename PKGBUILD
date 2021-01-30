@@ -7,9 +7,11 @@ pkgrel=1
 pkgdesc="PL/R - PostgreSQL support for R as a procedural language (PL)"
 arch=('any')
 makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
-             "${MINGW_PACKAGE_PREFIX}-perl"
-             "${MINGW_PACKAGE_PREFIX}-flex"
-             "${MINGW_PACKAGE_PREFIX}-bison"
+             "curl"
+             "perl"
+             "git"
+             "flex"
+             "bison"
              "make")
 
 license=("GPL")

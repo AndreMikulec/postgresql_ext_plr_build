@@ -4,6 +4,9 @@ set -v -x
 
 cd "$(dirname "$0")"
 
+pacman -S --noconfirm --needed mingw-w64-{i686,x86_64}-gcc
+pacman -S --noconfirm --needed msys/{curl,perl,git,flex,bison,make}
+
 # ANDRE --nocheck
 #
 # Users who do not need it . . . call makepkg with --nocheck flag
