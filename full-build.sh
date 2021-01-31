@@ -4,6 +4,10 @@ set -v -x
 
 
 
+# ANSI control codes
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
 loginfo() {
   set +v +x
   echo -ne "${CYAN}"
@@ -14,14 +18,8 @@ loginfo() {
 
 
 
-
 loginfo "BEGIN file full-build.sh"
 
-
-
-# ANSI control codes
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
 
 
 cd "$(dirname "$0")"

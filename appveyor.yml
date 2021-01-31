@@ -310,7 +310,7 @@ cache:
   - 'PG_%PG_GIT_BRANCH%.build.tar.gz'
 
 deploy:
-  release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%"
+  release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%"
   provider: GitHub
   auth_token:
     secure: KzS1DumC2yBg2LGN9x3AemHFOjAdp+rD58rW5aGGpwW4Pfdwdm7AmRpYKprPY8Gs

@@ -3,6 +3,18 @@ set -v -x
 
 
 
+#
+# mypaint/windows/msys2-build.sh
+# https://github.com/mypaint/mypaint/blob/4141a6414b77dcf3e3e62961f99b91d466c6fb52/windows/msys2-build.sh
+#
+# also functions: loginfo() logok() logerror()
+#
+# ANSI control codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
 loginfo() {
   set +v +x
   echo -ne "${CYAN}"
@@ -11,7 +23,6 @@ loginfo() {
   set -v -x
 }
 
-
 logok() {
   set +v +x
   echo -ne "${GREEN}"
@@ -19,7 +30,6 @@ logok() {
   echo -e "${NC}"
   set -v -x
 }
-
 
 logerr() {
   set +v +x
@@ -92,19 +102,6 @@ export
 loginfo "BEGIN file PKGBUILD pwd"
 pwd
 loginfo "END   file PKGBUILD pwd"
-
-
-#
-# mypaint/windows/msys2-build.sh
-# https://github.com/mypaint/mypaint/blob/4141a6414b77dcf3e3e62961f99b91d466c6fb52/windows/msys2-build.sh
-#
-# also functions: loginfo() logok() logerror()
-#
-# ANSI control codes
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
 
 
 
@@ -329,7 +326,7 @@ package() {
   mkdir -p                                                     ${ZIPTMP}/share
   cp -r -p ${PGINSTALL}/share${DIRPOSTGRESQL}/extension/plr*.* ${ZIPTMP}/share
   #
-  export ZIP=PLR_${PLR_TAG}_${MSYSTEM}_PG_${PG_GIT_BRANCH}_R_${R_OLD_VERSION}.tar.gz
+  export ZIP=PLR_${PLR_TAG}_${MSYSTEM}_PG_${PG_GIT_BRANCH}_R_${R_CUR_VERSION}.tar.gz
   echo ${ZIP}
   cd ${ZIPTMP}
   loginfo "BEGIN tar CREATION"
