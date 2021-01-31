@@ -1,4 +1,5 @@
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/AndreMikulec/postgresql_ext_plr_build?branch=master)](https://ci.appveyor.com/project/AndreMikulec/postgresql_ext_plr_build)
+
+[![Build status](https://ci.appveyor.com/api/projects/status/qsvmgjly4yq60pmy/branch/master?svg=true)](https://ci.appveyor.com/project/AndreMikulec/postgresql-ext-plr-build/branch/master)
 
 # What is This?
 
