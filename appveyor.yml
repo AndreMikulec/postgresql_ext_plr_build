@@ -284,7 +284,7 @@ cache:
   # https://ci.appveyor.com/api-keys
   #
   # export APPVEYOR_TOKEN="Get from MY page: https://ci.appveyor.com/api-keys"
-  # curl -X "DELETE" -H "Authorization: Bearer $APPVEYOR_TOKEN" https://ci.appveyor.com/project/AndreMikulec/postgresql_ext_plr_build/buildcache
+  # curl -X "DELETE" -H "Authorization: Bearer $APPVEYOR_TOKEN" https://ci.appveyor.com/api/projects/AndreMikulec/postgresql_ext_plr_build/buildcache
   #
   #  85 MB not compressed (3.6.3)
   - 'R-%R_OLD_VERSION%-win.exe'
