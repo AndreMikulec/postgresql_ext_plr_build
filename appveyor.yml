@@ -310,7 +310,6 @@ cache:
   - 'PG_%PG_GIT_BRANCH%.build.tar.gz'
 
 deploy:
-  tag: %APPVEYOR_REPO_TAG_NAME%
   release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%"
   provider: GitHub
   auth_token:
