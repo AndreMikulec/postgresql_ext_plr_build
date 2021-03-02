@@ -80,8 +80,6 @@ environment:
   # directories "src" and "pkg/postgres-plr"
   PGSOURCE:  $(APPVEYOR_BUILD_FOLDER)\postgres
   PLRSOURCE:  $(APPVEYOR_BUILD_FOLDER)\plr
-  # PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\PLRMAKEFILESOURCE\plr
-  PGBUILD: $(APPVEYOR_BUILD_FOLDER)\PGBUILD
   PGINSTALL: $(APPVEYOR_BUILD_FOLDER)\PGINSTALL
   R_HOME: $(APPVEYOR_BUILD_FOLDER)\RINSTALL
   ZIPTMP: $(APPVEYOR_BUILD_FOLDER)\ZIPTMP
@@ -186,7 +184,6 @@ install:
   # acquire source code
   - git clone --depth 1 --single-branch --branch=%PG_GIT_BRANCH% https://github.com/postgres/postgres.git %PGSOURCE%
   - git clone --depth 1 --single-branch --branch=%PLR_TAG%       https://github.com/postgres-plr/plr.git  %PLRSOURCE%
-  # - git clone --depth 1 --single-branch --branch=master          https://github.com/AndreMikulec/postgresql_ext_plr_Makefile.git %PLRMAKEFILESOURCE%
 
   # From
   # https://github.com/postgres-plr/plpostgres-plr/plr/appveyor.yml
@@ -305,11 +302,9 @@ cache:
   - '%BETTERPERL%.zip'
 
   #
-  # note, in that branch(or tag), this is not the "latest", but this "good enough"
-  #   2 MB not compressed
-  - 'PG_%PG_GIT_BRANCH%.configure.tar.gz'
-  # 200 MB not compressed
-  - 'PG_%PG_GIT_BRANCH%.build.tar.gz'
+  # note, in that branch(or tag), this is not the "latest", but this is "good enough"
+  #   2 MB not compressed + 200 MB not compressed
+  - 'PG_%PG_GIT_BRANCH%.configure.build.tar.gz'
 
 deploy:
   release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%"

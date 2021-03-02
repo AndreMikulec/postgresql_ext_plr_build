@@ -67,8 +67,6 @@ license=("GPL")
 
 export PGSOURCE=$(cygpath -u "${PGSOURCE}")
 export PLRSOURCE=$(cygpath -u "${PLRSOURCE}")
-# export PLRMAKEFILESOURCE=$(cygpath -u "${PLRMAKEFILESOURCE}")
-export PGBUILD=$(cygpath -u "${PGBUILD}")
 export PGINSTALL=$(cygpath -u "${PGINSTALL}")
 export R_HOME=$(cygpath -u "${R_HOME}")
 export ZIPTMP=$(cygpath -u "${ZIPTMP}")
@@ -130,27 +128,25 @@ package() {
 
 
 
-  loginfo "BEGIN PKGBUILD package POSTGRESQL CONFIGURE"
+  loginfo "BEGIN PKGBUILD package POSTGRESQL CONFIGURE + BUILD"
   #
-  # prepare to configure postgres
+  # configure + build postgres
   #
-  mkdir ${PGBUILD}
-  #
-  # configure postgres
-  #
-  cd ${PGBUILD}
-  if [ ! -f "${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz" ]
+  cd ${PGSOURCE}
+  if [ ! -f "${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.build.tar.gz" ]
   then
-    ${PGSOURCE}/configure --enable-depend --disable-rpath --prefix=${PGINSTALL}
+    ./configure --enable-depend --disable-rpath --prefix=${PGINSTALL}
+    # + build
+    make
     loginfo "BEGIN tar CREATION"
     ls -alrt ${APPVEYOR_BUILD_FOLDER}
-    tar -zcf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz *
-    ls -alrt ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz
+    tar -zcf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.build.tar.gz *
+    ls -alrt ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.build.tar.gz
     loginfo "END   tar CREATION"
   else
     loginfo "BEGIN tar EXTRACTION"
-    tar -zxf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.tar.gz
-    ls -alrt ${PGBUILD}
+    tar -zxf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.build.tar.gz
+    ls -alrt ${PGSOURCE}
     loginfo "END   tar EXTRACTION"
   fi
   cd -
@@ -159,45 +155,19 @@ package() {
 
 
 
-  loginfo "BEGIN PKGBUILD package PGBUILD to PGSOURCE links follow"
+  loginfo "BEGIN PKGBUILD package 'build' to 'source' links follow"
   #
   # Links from the "build environment" back to the "source environment".
   # Links "abs_top_builddir" back to the "abs_top_srcdir" directory.
   #
-  cat  "${PGBUILD}/src/Makefile.global" | grep '^abs'
-  cat  "${PGBUILD}/src/Makefile.global" | grep '^CPPFLAGS'
+  cat  "${PGSOURCE}/src/Makefile.global" | grep '^abs'
+  cat  "${PGSOURCE}/src/Makefile.global" | grep '^CPPFLAGS'
   #
   # If these are wrong then re-run configure !!!
   # If these are wrong then re-run configure !!!
   # If these are wrong then re-run configure !!!
   #
-  loginfo "END   PKGBUILD package PGBUILD to PGSOURCE links follow"
-
-
-
-  loginfo "BEGIN PKGBUILD package POSTGRESQL BUILD"
-  #
-  # postgres build
-  #
-  cd ${PGBUILD}
-  if [ ! -f "${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz" ]
-  then
-    make
-    loginfo "BEGIN tar CREATION"
-    ls -alrt ${APPVEYOR_BUILD_FOLDER}
-    tar -zcf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz *
-    ls -alrt ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz
-    loginfo "END   tar CREATION"
-  else
-    loginfo "BEGIN tar EXTRACTION"
-    tar -zxf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.build.tar.gz
-    ls -alrt ${PGBUILD}
-    loginfo "END   tar EXTRACTION"
-  fi
-
-  cd -
-  loginfo "END   PKGBUILD package POSTGRESQL BUILD"
-  pwd
+  loginfo "END   PKGBUILD package 'build' to 'source' links follow"
 
 
 
@@ -210,23 +180,11 @@ package() {
   #
   mkdir -p                                      ${PGSOURCE}/contrib/plr
   cp -r -p ${PLRSOURCE}/*                       ${PGSOURCE}/contrib/plr
-# rm                                            ${PGSOURCE}/contrib/plr/Makefile
-# cp    -p ${PLRMAKEFILESOURCE}/Makefile        ${PGSOURCE}/contrib/plr
-  #
-  # copy the correct Makefile to PGBUILD
-  #
-  mkdir -p                                      ${PGBUILD}/contrib/plr
-  # when doing an out-of-place build, copy the Makefile over
-# cp    -p ${PLRMAKEFILESOURCE}/Makefile        ${PGBUILD}/contrib/plr
-  cp    -p ${PGSOURCE}/contrib/plr/Makefile     ${PGBUILD}/contrib/plr
-  mkdir -p                                      ${PGBUILD}/contrib/plr/sql
-  mkdir -p                                      ${PGBUILD}/contrib/plr/expected
   #
   loginfo "echo END  PKGBUILD package PLR FILES SETUP"
   ls -alrt ${PLRSOURCE}/LICENSE
   ls -alrt ${PGSOURCE}/contrib/plr
   cat      ${PGSOURCE}/contrib/plr/Makefile
-  cat       ${PGBUILD}/contrib/plr/Makefile
 
 
 
@@ -236,7 +194,7 @@ package() {
   #
   export R_HOME_ORIG=${R_HOME}
   export R_HOME=${R_HOME}OLD
-  cd ${PGBUILD}/contrib/plr
+  cd ${PGSOURCE}/contrib/plr
   make
   make install
   make clean
@@ -295,7 +253,7 @@ package() {
   #
   export R_HOME_ORIG=${R_HOME}
   export R_HOME=${R_HOME}CUR
-  cd ${PGBUILD}/contrib/plr
+  cd ${PGSOURCE}/contrib/plr
   make
   make install
   make clean
