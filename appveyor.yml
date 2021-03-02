@@ -254,6 +254,10 @@ build_script:
 
 artifacts:
   - path: 'PLR_*.tar.gz'
+    name: PLR_tar_gz
+
+  - path: 'PG_$(PG_GIT_BRANCH).configure.build.tar.gz'
+    name: PostgreSQL_tar_gz
 
 
 
@@ -310,15 +314,31 @@ cache:
   #   2 MB not compressed + 200 MB not compressed
   - 'PG_%PG_GIT_BRANCH%.configure.build.tar.gz'
 
+
+
 deploy:
-  release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%"
-  provider: GitHub
-  auth_token:
-    secure: KzS1DumC2yBg2LGN9x3AemHFOjAdp+rD58rW5aGGpwW4Pfdwdm7AmRpYKprPY8Gs
-  draft: false
-  prerelease: false
-  on:
-    branch: master
+  - provider: GitHub
+    release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%"
+    auth_token:
+      secure: KzS1DumC2yBg2LGN9x3AemHFOjAdp+rD58rW5aGGpwW4Pfdwdm7AmRpYKprPY8Gs
+    artifact: PLR_tar_gz
+    draft: false
+    prerelease: false
+    on:
+      branch: master
+
+  - provider: FTP
+    host: frs.sourceforge.net
+    protocol: sftp
+    username: andremikulec,andremikulec.u
+    password:
+      secure: 4gk4GyW4O5RooiOyGeRdoA==
+    artifact: PostgreSQL_tar_gz
+    folder: /home/frs/project/andremikulec
+    application:
+    active_mode: false
+    on:
+      branch: master
 
 
 
@@ -326,3 +346,13 @@ on_finish:
 #   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 # # remove locking file from the desktop
   - echo END   file appveyor.yml
+
+
+
+# I run my jobs manually
+# I do not want my email filling up
+notifications:
+  - provider: Email
+    on_build_success: false
+    on_build_failure: false
+    on_build_status_changed: false
