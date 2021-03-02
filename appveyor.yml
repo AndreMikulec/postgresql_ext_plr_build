@@ -80,7 +80,7 @@ environment:
   # directories "src" and "pkg/postgres-plr"
   PGSOURCE:  $(APPVEYOR_BUILD_FOLDER)\postgres
   PLRSOURCE:  $(APPVEYOR_BUILD_FOLDER)\plr
-  PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\PLRMAKEFILESOURCE\plr
+  # PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\PLRMAKEFILESOURCE\plr
   PGBUILD: $(APPVEYOR_BUILD_FOLDER)\PGBUILD
   PGINSTALL: $(APPVEYOR_BUILD_FOLDER)\PGINSTALL
   R_HOME: $(APPVEYOR_BUILD_FOLDER)\RINSTALL
@@ -90,7 +90,9 @@ environment:
       BETTERPERLURL: $(BETTERPERL64URL)
       BETTERPERL: $(BETTERPERL64)
       PG_GIT_BRANCH: REL_13_STABLE
-      PLR_TAG: REL8_4_1
+      # PLR_TAG: REL8_4_1
+      # temporary until Dave Cramer pushes tag REL8_4_2
+      PLR_TAG: master
       R_ARCH: /x64
       COMPONENTS_ARCH: ',x64'
       R_OLD_VERSION: 3.6.3
@@ -184,7 +186,7 @@ install:
   # acquire source code
   - git clone --depth 1 --single-branch --branch=%PG_GIT_BRANCH% https://github.com/postgres/postgres.git %PGSOURCE%
   - git clone --depth 1 --single-branch --branch=%PLR_TAG%       https://github.com/postgres-plr/plr.git  %PLRSOURCE%
-  - git clone --depth 1 --single-branch --branch=master          https://github.com/AndreMikulec/postgresql_ext_plr_Makefile.git %PLRMAKEFILESOURCE%
+  # - git clone --depth 1 --single-branch --branch=master          https://github.com/AndreMikulec/postgresql_ext_plr_Makefile.git %PLRMAKEFILESOURCE%
 
   # From
   # https://github.com/postgres-plr/plpostgres-plr/plr/appveyor.yml
@@ -310,7 +312,7 @@ cache:
   - 'PG_%PG_GIT_BRANCH%.build.tar.gz'
 
 deploy:
-  release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%"
+  release: "PLR_%PLR_TAG%_%APPVEYOR_REPO_COMMIT:~0,8%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%"
   provider: GitHub
   auth_token:
     secure: KzS1DumC2yBg2LGN9x3AemHFOjAdp+rD58rW5aGGpwW4Pfdwdm7AmRpYKprPY8Gs
