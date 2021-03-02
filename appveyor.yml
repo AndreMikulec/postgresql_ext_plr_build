@@ -164,12 +164,6 @@ install:
   # Jul 15, 2019
   # https://help.appveyor.com/discussions/problems/24408-not-enough-disk-sapce
 
-  # needed to acquire source code
-  - pacman -S --noconfirm --needed msys/git
-
-  # needed to (eventually) save cache and artifacts
-  - pacman -S --noconfirm --needed msys/tar
-
   # MSYS2 updates
   # SEE mypaint
   # https://github.com/mypaint/mypaint/blob/4141a6414b77dcf3e3e62961f99b91d466c6fb52/.appveyor.yml
@@ -179,11 +173,20 @@ install:
   - pacman --noconfirm -Syuu
   - pacman --noconfirm -Suu
 
+  # needed to acquire source code
+  - pacman -S --noconfirm --needed msys/git
+
+  # needed to (eventually) save cache and artifacts
+  - pacman -S --noconfirm --needed msys/tar
+
   - echo END   MSYS2 UPGRADE
 
   # acquire source code
   - git clone --depth 1 --single-branch --branch=%PG_GIT_BRANCH% https://github.com/postgres/postgres.git %PGSOURCE%
   - git clone --depth 1 --single-branch --branch=%PLR_TAG%       https://github.com/postgres-plr/plr.git  %PLRSOURCE%
+  # . . . future . . .
+  # works (1) in a branch or (2) at a detached head
+  # git rev-parse --short HEAD
 
   # From
   # https://github.com/postgres-plr/plpostgres-plr/plr/appveyor.yml
