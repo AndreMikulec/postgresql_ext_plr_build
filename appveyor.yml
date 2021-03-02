@@ -50,10 +50,10 @@
 version: 0.1.0-{build}-{branch}
 
 # Do not build on tags (GitHub and BitBucket)
-skip_tags: true
+# skip_tags: true
 
 # Start builds on tags only (GitHub and BitBucket)
-# skip_non_tags: true
+skip_non_tags: true
 
 branches:
   only:
@@ -80,7 +80,7 @@ environment:
   # directories "src" and "pkg/postgres-plr"
   PGSOURCE:  $(APPVEYOR_BUILD_FOLDER)\postgres
   PLRSOURCE:  $(APPVEYOR_BUILD_FOLDER)\plr
-  PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\PLRMAKEFILESOURCE\plr
+  # PLRMAKEFILESOURCE: $(APPVEYOR_BUILD_FOLDER)\PLRMAKEFILESOURCE\plr
   PGBUILD: $(APPVEYOR_BUILD_FOLDER)\PGBUILD
   PGINSTALL: $(APPVEYOR_BUILD_FOLDER)\PGINSTALL
   R_HOME: $(APPVEYOR_BUILD_FOLDER)\RINSTALL
@@ -310,6 +310,7 @@ cache:
   - 'PG_%PG_GIT_BRANCH%.build.tar.gz'
 
 deploy:
+  tag: %APPVEYOR_REPO_TAG_NAME%
   release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%"
   provider: GitHub
   auth_token:
@@ -318,7 +319,7 @@ deploy:
   prerelease: false
   on:
     branch: master
-
+    APPVEYOR_REPO_TAG: true       # deploy on tag push only
 
 
 on_finish:
