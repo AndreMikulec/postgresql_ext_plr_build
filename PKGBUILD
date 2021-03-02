@@ -67,7 +67,7 @@ license=("GPL")
 
 export PGSOURCE=$(cygpath -u "${PGSOURCE}")
 export PLRSOURCE=$(cygpath -u "${PLRSOURCE}")
-# export PLRMAKEFILESOURCE=$(cygpath -u "${PLRMAKEFILESOURCE}")
+export PLRMAKEFILESOURCE=$(cygpath -u "${PLRMAKEFILESOURCE}")
 export PGBUILD=$(cygpath -u "${PGBUILD}")
 export PGINSTALL=$(cygpath -u "${PGINSTALL}")
 export R_HOME=$(cygpath -u "${R_HOME}")
@@ -210,14 +210,13 @@ package() {
   #
   mkdir -p                                      ${PGSOURCE}/contrib/plr
   cp -r -p ${PLRSOURCE}/*                       ${PGSOURCE}/contrib/plr
-# rm                                            ${PGSOURCE}/contrib/plr/Makefile
-# cp    -p ${PLRMAKEFILESOURCE}/Makefile        ${PGSOURCE}/contrib/plr
+  rm                                            ${PGSOURCE}/contrib/plr/Makefile
+  cp    -p ${PLRMAKEFILESOURCE}/Makefile        ${PGSOURCE}/contrib/plr
   #
   # copy the correct Makefile to PGBUILD
   #
   mkdir -p                                      ${PGBUILD}/contrib/plr
-# cp    -p ${PLRMAKEFILESOURCE}/Makefile        ${PGBUILD}/contrib/plr
-  cp    -p ${PGSOURCE}/contrib/plr/Makefile     ${PGBUILD}/contrib/plr
+  cp    -p ${PLRMAKEFILESOURCE}/Makefile        ${PGBUILD}/contrib/plr
   mkdir -p                                      ${PGBUILD}/contrib/plr/sql
   mkdir -p                                      ${PGBUILD}/contrib/plr/expected
   #
