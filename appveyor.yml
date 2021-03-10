@@ -58,9 +58,11 @@ skip_tags: true
 #   only:
 #     - master
 
+# Skipping commits affecting specific files (GitHub only).
 skip_commits:
   files:
-    - *.md
+    - '**/*.md'  
+  message: /\[skip ci]/ 
 
 # Build worker image (VM template)
 image: Visual Studio 2019
