@@ -55,13 +55,13 @@ skip_tags: true
 # Start builds on tags only (GitHub and BitBucket)
 # skip_non_tags: true
 
-branches:
-  only:
-    - master
+# branches:
+#   only:
+#     - master
 
 skip_commits:
   files:
-    - readme.*
+    - *.md
 
 # Build worker image (VM template)
 image: Visual Studio 2019
@@ -243,11 +243,8 @@ install:
 
 build_script:
   - set HOME=.
-
   - echo BEGIN APPVEYOR BUILD SCRIPT
-
   - bash --login -c "$(cygpath ${APPVEYOR_BUILD_FOLDER})/full-build.sh"
-
   - echo END   APPVEYOR BUILD SCRIPT
 
 
@@ -256,8 +253,9 @@ artifacts:
   - path: 'PLR_*.tar.gz'
     name: PLR_tar_gz
 
-  - path: 'PG_$(PG_GIT_BRANCH).configure.build.tar.gz'
-    name: PostgreSQL_tar_gz
+# # DOES WORK
+# - path: 'PG_$(PG_GIT_BRANCH).configure.build.tar.gz'
+#   name: PostgreSQL_tar_gz
 
 
 
@@ -324,21 +322,22 @@ deploy:
     artifact: PLR_tar_gz
     draft: false
     prerelease: false
-    on:
-      branch: master
+#   on:
+#     branch: master
 
-  - provider: FTP
-    host: frs.sourceforge.net
-    protocol: sftp
-    username: andremikulec,andremikulec.u
-    password:
-      secure: 4gk4GyW4O5RooiOyGeRdoA==
-    artifact: PostgreSQL_tar_gz
-    folder: /home/frs/project/andremikulec
-    application:
-    active_mode: false
-    on:
-      branch: master
+# # DOES WORK
+# - provider: FTP
+#   host: frs.sourceforge.net
+#   protocol: sftp
+#   username: andremikulec,andremikulec.u
+#   password:
+#     secure: 4gk4GyW4O5RooiOyGeRdoA==
+#   artifact: PostgreSQL_tar_gz
+#   folder: /home/frs/project/andremikulec
+#   application:
+#   active_mode: false
+#   on:
+#     branch: master
 
 
 
