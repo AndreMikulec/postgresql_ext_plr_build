@@ -262,12 +262,17 @@ build_script:
 
 
 artifacts:
+  #
+  # see the log . . .
+  # if the artifact is deployed to Github (buts seems silently dropped(re-overridden by Github)), 
+  #   then some uniqueness may be needed ???
+  # 
   - path: 'PLR_*.tar.gz'
-    name: PLR_tar_gz
+    name: "PLR_%MSYSTEM%_tar_gz"
 
 # # DOES WORK
-# - path: 'PG_$(PG_GIT_BRANCH).$(MSYSTEM).configure.build.tar.gz'
-#   name: PostgreSQL_tar_gz
+# - path: 'PG_%PG_GIT_BRANCH%.%MSYSTEM%.configure.build.tar.gz'
+#   name: "PostgreSQL_%MSYSTEM%_tar_gz"
 
 
 
@@ -285,6 +290,8 @@ artifacts:
 # https://stackoverflow.com/questions/23735282/if-not-exist-command-in-batch-file
 #
 cache:
+  # NOTE, cache (created now), and thus cache (to be restored ASAP), 
+  #   is ONLY available on the NEXT build (set of runtime jobs), but the cache IS AVAILABLE per project.
   #
   # 1 GB limit per "free" account
   #
@@ -331,7 +338,7 @@ deploy:
     release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%"
     auth_token:
       secure: KzS1DumC2yBg2LGN9x3AemHFOjAdp+rD58rW5aGGpwW4Pfdwdm7AmRpYKprPY8Gs
-    artifact: PLR_tar_gz
+    artifact: "PLR_%MSYSTEM%_tar_gz"
     draft: false
     prerelease: false
 #   on:
