@@ -98,6 +98,7 @@ environment:
       R_OLD_VERSION: 3.6.3
       R_CUR_VERSION: 4.0.3
 
+
 # Accessing Windows build worker via Remote Desktop
 # JAN 2021
 # https://www.appveyor.com/docs/how-to/rdp-to-build-worker/
@@ -127,11 +128,11 @@ init:
 
 install:
   - set HOME=.
-
   - echo BEGIN APPVEYOR INSTALL
-
   - echo on
   - set
+  # TEMPORARY renaming CACHE ITEM
+  - copy PG_%PG_GIT_BRANCH%.configure.build.tar.gz PG_%PG_GIT_BRANCH%.%MSYSTEM%.configure.build.tar.gz
   #
   # MSYS2_PATH_TYPE=inherit
   # MSYSTEM=MINGW64
@@ -310,8 +311,8 @@ cache:
 
   #
   # note, in that branch(or tag), this is not the "latest", but this is "good enough"
-  #   2 MB not compressed + 200 MB not compressed
-  - 'PG_%PG_GIT_BRANCH%.configure.build.tar.gz'
+  #   2 MB not compressed + 200 MB not compressed (and 48 MB at sourceforge: compressed?)
+  - 'PG_%PG_GIT_BRANCH%.%MSYSTEM%.configure.build.tar.gz'
 
 
 
