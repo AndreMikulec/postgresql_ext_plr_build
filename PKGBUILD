@@ -81,6 +81,8 @@ export APPVEYOR_BUILD_FOLDER=$(cygpath -u "${APPVEYOR_BUILD_FOLDER}")
 # everytime I enter MSYS2 (using any method), this is
 # pre-pended to the beginning of the path . . .
 # /mingw64/bin:/usr/local/bin:/usr/bin:/bin:
+# or
+# /mingw32/bin:/usr/local/bin:/usr/bin:/bin:
 
 # but I want Strawberry Perl to be in front, so I will manually do that HERE now
 export PATH=${APPVEYOR_BUILD_FOLDER}/${BETTERPERL}/perl/bin:$PATH
