@@ -195,7 +195,9 @@ package() {
   cd ${PGSOURCE}/contrib/plr
   if [ "${BUILD_CONFIG}" = "Debug" ]
   then
+    echo ""                          >> Makefile
     echo "override CFLAGS += -g -Og" >> Makefile
+    echo ""                          >> Makefile
   fi
   cd -
   #
