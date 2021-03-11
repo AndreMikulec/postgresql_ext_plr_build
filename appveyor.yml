@@ -141,8 +141,6 @@ install:
   - echo BEGIN APPVEYOR INSTALL
   - echo on
   - set
-  # TEMPORARY renaming CACHE ITEM
-  - copy PG_%PG_GIT_BRANCH%.configure.build.tar.gz PG_%PG_GIT_BRANCH%.%MSYSTEM%.configure.build.tar.gz
   #
   # MSYS2_PATH_TYPE=inherit
   # MSYSTEM=MINGW64
