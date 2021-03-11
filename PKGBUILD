@@ -135,7 +135,7 @@ package() {
   # configure + build postgres
   #
   cd ${PGSOURCE}
-  if [ ! -f "${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.build.tar.gz" ]
+  if [ ! -f "${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.${MSYSTEM}.configure.build.tar.gz" ]
   then
     ./configure --enable-depend --disable-rpath --prefix=${PGINSTALL}
     # + build
