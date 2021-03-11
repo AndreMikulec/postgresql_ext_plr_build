@@ -140,12 +140,12 @@ package() {
     make
     loginfo "BEGIN tar CREATION"
     ls -alrt ${APPVEYOR_BUILD_FOLDER}
-    tar -zcf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.build.tar.gz *
-    ls -alrt ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.build.tar.gz
+    tar -zcf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.${MSYSTEM}.configure.build.tar.gz *
+    ls -alrt ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.${MSYSTEM}.configure.build.tar.gz
     loginfo "END   tar CREATION"
   else
     loginfo "BEGIN tar EXTRACTION"
-    tar -zxf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.configure.build.tar.gz
+    tar -zxf ${APPVEYOR_BUILD_FOLDER}/PG_${PG_GIT_BRANCH}.${MSYSTEM}.configure.build.tar.gz
     ls -alrt ${PGSOURCE}
     loginfo "END   tar EXTRACTION"
   fi
