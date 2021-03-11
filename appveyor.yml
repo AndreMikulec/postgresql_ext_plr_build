@@ -266,7 +266,7 @@ artifacts:
     name: PLR_tar_gz
 
 # # DOES WORK
-# - path: 'PG_$(PG_GIT_BRANCH).configure.build.tar.gz'
+# - path: 'PG_$(PG_GIT_BRANCH).$(MSYSTEM).configure.build.tar.gz'
 #   name: PostgreSQL_tar_gz
 
 
