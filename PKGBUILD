@@ -189,6 +189,18 @@ package() {
   cat      ${PGSOURCE}/contrib/plr/Makefile
 
 
+  #
+  # Attempt to make a debuggable plr
+  #
+  cd ${PGSOURCE}/contrib/plr
+  if [ "${BUILD_CONFIG}" = "Debug" ]
+  then
+    echo "override CFLAGS += -g -Og" >> Makefile
+  fi
+  cd -
+  #
+  cat      ${PGSOURCE}/contrib/plr/Makefile
+
 
   loginfo "BEGIN PKGBUILD package OLD R PLR BUILD AND INSTALL"
   #

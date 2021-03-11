@@ -88,6 +88,7 @@ environment:
   matrix:
     - MSYSTEM: MINGW32
       MINGW_INSTALLS_TODO: mingw32
+      BUILD_CONFIG: Release
       BETTERPERLURL: $(BETTERPERL32URL)
       BETTERPERL: $(BETTERPERL32)
       PG_GIT_BRANCH: REL_13_STABLE
@@ -100,6 +101,7 @@ environment:
       R_CUR_VERSION: 4.0.3
     - MSYSTEM: MINGW64
       MINGW_INSTALLS_TODO: mingw64
+      BUILD_CONFIG: Release
       BETTERPERLURL: $(BETTERPERL64URL)
       BETTERPERL: $(BETTERPERL64)
       PG_GIT_BRANCH: REL_13_STABLE
@@ -268,9 +270,9 @@ artifacts:
   #   then some uniqueness may be needed ???
   # 
   - path: 'PLR_*.tar.gz'
-    name: "PLR_%MSYSTEM%_tar_gz"
+    name: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%_%BUILD_CONFIG%"
 
-# # DOES WORK
+# # DOES WORK WITHOUT %MSYSTEM% (NOTE: %MSYSTEM% IS NOT TESTED YET)
 # - path: 'PG_%PG_GIT_BRANCH%.%MSYSTEM%.configure.build.tar.gz'
 #   name: "PostgreSQL_%MSYSTEM%_tar_gz"
 
@@ -335,10 +337,10 @@ cache:
 
 deploy:
   - provider: GitHub
-    release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%"
+    release: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%_%BUILD_CONFIG%"
     auth_token:
       secure: KzS1DumC2yBg2LGN9x3AemHFOjAdp+rD58rW5aGGpwW4Pfdwdm7AmRpYKprPY8Gs
-    artifact: "PLR_%MSYSTEM%_tar_gz"
+    artifact: "PLR_%PLR_TAG%_%MSYSTEM%_PG_%PG_GIT_BRANCH%_R_%R_CUR_VERSION%_AND_R_%R_OLD_VERSION%_%APPVEYOR_BUILD_VERSION%_%BUILD_CONFIG%"
     draft: false
     prerelease: false
 #   on:
